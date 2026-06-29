@@ -1,1806 +1,2675 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cronómetro PAES</title>
-<style>
-/* ================================================================
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>"
+        />
+        <title>Cronómetro PAES</title>
+        <style>
+            /* ================================================================
    PAES Timer — style.css
    Paleta: blanco + escala grises + acentos tenues por semántica
    Fuente: Inter (system-ui fallback)
    Filosofía: outline sin sombras, bordes levemente redondeados
 ================================================================ */
 
-/* ── Reset y base ─────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --white:      #ffffff;
-  --gray-50:    #f9f9f9;
-  --gray-100:   #f2f2f2;
-  --gray-200:   #e5e5e5;
-  --gray-300:   #d4d4d4;
-  --gray-400:   #a3a3a3;
-  --gray-500:   #737373;
-  --gray-600:   #525252;
-  --gray-700:   #404040;
-  --gray-800:   #262626;
-  --gray-900:   #171717;
-
-  /* Acentos tenues por sección */
-  --blue-light:   #eff6ff;
-  --blue-mid:     #93c5fd;
-  --green-light:  #f0fdf4;
-  --green-mid:    #86efac;
-  --red-light:    #fff1f2;
-  --red-mid:      #fca5a5;
-  --purple-light: #faf5ff;
-  --purple-mid:   #d8b4fe;
-  --amber-light:  #fffbeb;
-
-  --radius-sm:  3px;
-  --radius-md:  5px;
-  --radius-lg:  8px;
-
-  --font:       'Inter', system-ui, -apple-system, sans-serif;
-
-  --transition: 150ms ease;
-}
-
-html, body {
-  height: 100%;
-  font-family: var(--font);
-  background: var(--white);
-  color: var(--gray-800);
-  font-size: 15px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── Pantallas ─────────────────────────────────────────────── */
-.screen { display: none; min-height: 100vh; }
-.screen.active { display: flex; }
-
-/* ── Setup screen ──────────────────────────────────────────── */
-#screen-setup {
-  background: var(--white);
-  justify-content: center;
-  padding: 48px 24px;
-}
-
-.setup-layout {
-  width: 100%;
-  max-width: 960px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* Header */
-.app-header { display: flex; flex-direction: column; gap: 10px; }
-
-.app-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-mark {
-  font-size: 20px;
-  color: var(--gray-400);
-  line-height: 1;
-}
-
-.brand-name {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  color: var(--gray-900);
-}
-
-.app-desc {
-  font-size: 13.5px;
-  color: var(--gray-500);
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-/* Tutorial strip */
-.tutorial-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-md);
-  flex-wrap: wrap;
-}
-
-.tutorial-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-num {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--gray-200);
-  color: var(--gray-600);
-  font-size: 11px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.step-text {
-  font-size: 12.5px;
-  color: var(--gray-600);
-}
-
-.tutorial-sep {
-  color: var(--gray-300);
-  font-size: 13px;
-  user-select: none;
-}
-
-/* Grid principal setup */
-.setup-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .setup-grid { grid-template-columns: 1fr; }
-}
-
-/* Panel */
-.panel {
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: var(--white);
-}
-
-.panel-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--gray-500);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.label-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  opacity: 0.8;
-}
-
-.panel-hint {
-  font-size: 12.5px;
-  color: var(--gray-400);
-  line-height: 1.5;
-  margin-top: -8px;
-}
-
-.panel-hint em { font-style: italic; color: var(--gray-500); }
-
-/* Exam grid */
-.exam-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.exam-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  background: var(--white);
-  cursor: pointer;
-  text-align: left;
-  transition: border-color var(--transition), background var(--transition);
-}
-
-.exam-btn:hover {
-  border-color: var(--gray-400);
-  background: var(--gray-50);
-}
-
-.exam-btn.active {
-  border-color: var(--gray-700);
-  background: var(--gray-50);
-}
-
-.exam-btn-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--gray-800);
-  line-height: 1.3;
-}
-
-.exam-btn-duration {
-  font-size: 11px;
-  color: var(--gray-400);
-}
-
-/* Field group */
-.field-group { display: flex; flex-direction: column; gap: 8px; }
-
-.field-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gray-500);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Time inputs */
-.time-inputs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.time-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  background: var(--white);
-  transition: border-color var(--transition);
-}
-
-.time-input-wrap:focus-within { border-color: var(--gray-500); }
-
-.time-input-wrap input {
-  width: 40px;
-  border: none;
-  outline: none;
-  font-family: var(--font);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--gray-800);
-  text-align: center;
-  background: transparent;
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.time-input-wrap input[type="time"] {
-  width: auto;
-}
-
-.time-input-wrap input::-webkit-inner-spin-button,
-.time-input-wrap input::-webkit-outer-spin-button { display: none; }
-
-.time-unit {
-  font-size: 11px;
-  color: var(--gray-400);
-}
-
-.time-colon {
-  font-size: 18px;
-  color: var(--gray-300);
-  font-weight: 300;
-}
-
-/* Horarios de inicio y fin */
-.schedule-group {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--gray-50);
-  padding: 12px;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  flex-wrap: wrap;
-}
-
-.schedule-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.schedule-item-val {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gray-800);
-}
-
-/* Selected time display */
-.selected-time-display {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-}
-
-.selected-label {
-  font-size: 11px;
-  color: var(--gray-400);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.selected-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--gray-800);
-}
-
-.selected-source {
-  font-size: 12px;
-  color: var(--gray-400);
-  margin-left: auto;
-}
-
-/* Divider */
-.divider {
-  height: 1px;
-  background: var(--gray-100);
-  margin: 0;
-}
-
-/* Alerts list */
-.alerts-list { display: flex; flex-direction: column; gap: 6px; }
-
-.alert-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border: 1.5px solid var(--gray-100);
-  border-radius: var(--radius-sm);
-  transition: border-color var(--transition);
-}
-
-.alert-row:hover { border-color: var(--gray-200); }
-
-.alert-row input[type="checkbox"] { accent-color: var(--gray-600); }
-
-.alert-row-label {
-  font-size: 13px;
-  color: var(--gray-700);
-  flex: 1;
-}
-
-.alert-row-badge {
-  font-size: 10.5px;
-  padding: 2px 7px;
-  border-radius: 99px;
-  background: var(--red-light);
-  color: #b91c1c;
-  font-weight: 500;
-}
-
-.alert-row-badge.badge-default {
-  background: var(--gray-100);
-  color: var(--gray-500);
-}
-
-.btn-remove-alert {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--gray-300);
-  font-size: 14px;
-  line-height: 1;
-  padding: 2px 4px;
-  border-radius: 3px;
-  transition: color var(--transition);
-}
-
-.btn-remove-alert:hover { color: var(--gray-600); }
-
-/* Add alert row */
-.add-alert-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.add-alert-row input {
-  width: 90px;
-  padding: 7px 10px;
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 13px;
-  color: var(--gray-800);
-  outline: none;
-  transition: border-color var(--transition);
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.add-alert-row input:focus { border-color: var(--gray-500); }
-
-/* Toggle switch */
-.toggle-switch {
-  position: relative;
-  display: inline-flex;
-  cursor: pointer;
-  margin-left: auto;
-}
-
-.toggle-switch input { display: none; }
-
-.toggle-track {
-  width: 34px;
-  height: 18px;
-  border-radius: 99px;
-  background: var(--gray-200);
-  position: relative;
-  transition: background var(--transition);
-}
-
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--white);
-  transition: transform var(--transition);
-}
-
-.toggle-switch input:checked + .toggle-track { background: var(--gray-600); }
-.toggle-switch input:checked + .toggle-track::after { transform: translateX(16px); }
-
-/* Break config */
-.break-config {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  background: var(--purple-light);
-  border: 1px solid #e9d5ff;
-  border-radius: var(--radius-sm);
-  opacity: 0.45;
-  pointer-events: none;
-  transition: opacity var(--transition);
-}
-
-.break-config.enabled {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* CTA row */
-.cta-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.test-mode-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  font-size: 13px;
-  color: var(--gray-500);
-}
-
-/* ── Botones ───────────────────────────────────────────────── */
-.btn-primary {
-  padding: 11px 28px;
-  background: var(--gray-900);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background var(--transition);
-  letter-spacing: 0.1px;
-}
-
-.btn-primary:hover { background: var(--gray-700); }
-
-.btn-outline {
-  padding: 9px 18px;
-  background: var(--white);
-  color: var(--gray-700);
-  border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: border-color var(--transition), color var(--transition);
-}
-
-.btn-outline:hover { border-color: var(--gray-400); color: var(--gray-900); }
-
-.btn-outline.btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-.btn-ghost {
-  padding: 9px 18px;
-  background: none;
-  color: var(--gray-500);
-  border: none;
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  transition: color var(--transition);
-  border-radius: var(--radius-sm);
-}
-
-.btn-ghost:hover { color: var(--gray-800); background: var(--gray-100); }
-
-.btn-ghost-sm {
-  padding: 5px 10px;
-  background: none;
-  color: var(--gray-400);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-sm);
-  font-family: var(--font);
-  font-size: 12px;
-  cursor: pointer;
-  transition: color var(--transition), border-color var(--transition);
-}
-
-.btn-ghost-sm:hover { color: var(--gray-700); border-color: var(--gray-400); }
-
-/* ── Timer screen ─────────────────────────────────────────── */
-#screen-timer {
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--white);
-  padding: 0;
-}
-
-.timer-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr 280px;
-  min-height: 100vh;
-  padding: 24px;
-  gap: 24px;
-}
-
-@media (max-width: 1024px) {
-  .timer-layout {
+            /* ── Reset y base ─────────────────────────────────────────── */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            :root {
+                --white: #ffffff;
+                --gray-50: #f9f9f9;
+                --gray-100: #f2f2f2;
+                --gray-200: #e5e5e5;
+                --gray-300: #d4d4d4;
+                --gray-400: #a3a3a3;
+                --gray-500: #737373;
+                --gray-600: #525252;
+                --gray-700: #404040;
+                --gray-800: #262626;
+                --gray-900: #171717;
+
+                /* Acentos tenues por sección */
+                --blue-light: #eff6ff;
+                --blue-mid: #93c5fd;
+                --green-light: #f0fdf4;
+                --green-mid: #86efac;
+                --red-light: #fff1f2;
+                --red-mid: #fca5a5;
+                --purple-light: #faf5ff;
+                --purple-mid: #d8b4fe;
+                --amber-light: #fffbeb;
+
+                --radius-sm: 3px;
+                --radius-md: 5px;
+                --radius-lg: 8px;
+
+                --font: "Inter", system-ui, -apple-system, sans-serif;
+
+                --transition: 150ms ease;
+            }
+
+            html,
+            body {
+                height: 100%;
+                font-family: var(--font);
+                background: var(--white);
+                color: var(--gray-800);
+                font-size: 15px;
+                line-height: 1.5;
+                -webkit-font-smoothing: antialiased;
+            }
+
+            /* ── Pantallas ─────────────────────────────────────────────── */
+            .screen {
+                display: none;
+                min-height: 100vh;
+            }
+            .screen.active {
+                display: flex;
+            }
+
+            /* ── Setup screen ──────────────────────────────────────────── */
+            #screen-setup {
+                background: var(--white);
+                justify-content: center;
+                padding: 48px 24px;
+            }
+
+            .setup-layout {
+                width: 100%;
+                max-width: 960px;
+                display: flex;
+                flex-direction: column;
+                gap: 32px;
+            }
+
+            /* Header */
+            .app-header {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .app-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .brand-mark {
+                font-size: 20px;
+                color: var(--gray-400);
+                line-height: 1;
+            }
+
+            .brand-name {
+                font-size: 18px;
+                font-weight: 600;
+                letter-spacing: -0.3px;
+                color: var(--gray-900);
+            }
+
+            .app-desc {
+                font-size: 13.5px;
+                color: var(--gray-500);
+                max-width: 600px;
+                line-height: 1.6;
+            }
+
+            /* Tutorial strip */
+            .tutorial-strip {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 18px;
+                background: var(--gray-50);
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-md);
+                flex-wrap: wrap;
+            }
+
+            .tutorial-step {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .step-num {
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: var(--gray-200);
+                color: var(--gray-600);
+                font-size: 11px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            .step-text {
+                font-size: 12.5px;
+                color: var(--gray-600);
+            }
+
+            .tutorial-sep {
+                color: var(--gray-300);
+                font-size: 13px;
+                user-select: none;
+            }
+
+            /* Grid principal setup */
+            .setup-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            @media (max-width: 768px) {
+                .setup-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Panel */
+            .panel {
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-lg);
+                padding: 22px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+                background: var(--white);
+            }
+
+            .panel-label {
+                font-size: 11.5px;
+                font-weight: 600;
+                letter-spacing: 0.6px;
+                text-transform: uppercase;
+                color: var(--gray-500);
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+
+            .label-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                opacity: 0.8;
+            }
+
+            .panel-hint {
+                font-size: 12.5px;
+                color: var(--gray-400);
+                line-height: 1.5;
+                margin-top: -8px;
+            }
+
+            .panel-hint em {
+                font-style: italic;
+                color: var(--gray-500);
+            }
+
+            /* Exam grid */
+            .exam-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .exam-btn {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                padding: 10px 12px;
+                border: 1.5px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                background: var(--white);
+                cursor: pointer;
+                text-align: left;
+                transition:
+                    border-color var(--transition),
+                    background var(--transition);
+            }
+
+            .exam-btn:hover {
+                border-color: var(--gray-400);
+                background: var(--gray-50);
+            }
+
+            .exam-btn.active {
+                border-color: var(--gray-700);
+                background: var(--gray-50);
+            }
+
+            .exam-btn-name {
+                font-size: 12.5px;
+                font-weight: 300;
+                color: var(--gray-800);
+                line-height: 1.3;
+            }
+
+            .exam-btn-duration {
+                font-size: 11px;
+                color: var(--gray-400);
+            }
+
+            /* Field group */
+            .field-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .field-label {
+                font-size: 12px;
+                font-weight: 500;
+                color: var(--gray-500);
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            /* Time inputs */
+            .time-inputs {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .time-input-wrap {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                border: 1.5px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                padding: 7px 10px;
+                background: var(--white);
+                transition: border-color var(--transition);
+            }
+
+            .time-input-wrap:focus-within {
+                border-color: var(--gray-500);
+            }
+
+            .time-input-wrap input {
+                width: 40px;
+                border: none;
+                outline: none;
+                font-family: var(--font);
+                font-size: 15px;
+                font-weight: 500;
+                color: var(--gray-800);
+                text-align: center;
+                background: transparent;
+                appearance: textfield;
+                -moz-appearance: textfield;
+            }
+
+            .time-input-wrap input[type="time"] {
+                width: auto;
+            }
+
+            .time-input-wrap input::-webkit-inner-spin-button,
+            .time-input-wrap input::-webkit-outer-spin-button {
+                display: none;
+            }
+
+            .time-unit {
+                font-size: 11px;
+                color: var(--gray-400);
+            }
+
+            .time-colon {
+                font-size: 18px;
+                color: var(--gray-300);
+                font-weight: 300;
+            }
+
+            /* Horarios de inicio y fin */
+            .schedule-group {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                background: var(--gray-50);
+                padding: 12px;
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                flex-wrap: wrap;
+            }
+
+            .schedule-item {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .schedule-item-val {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--gray-800);
+            }
+
+            /* Selected time display */
+            .selected-time-display {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 14px;
+                background: var(--gray-50);
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+            }
+
+            .selected-label {
+                font-size: 11px;
+                color: var(--gray-400);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                white-space: nowrap;
+            }
+
+            .selected-value {
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--gray-800);
+            }
+
+            .selected-source {
+                font-size: 12px;
+                color: var(--gray-400);
+                margin-left: auto;
+            }
+
+            /* Divider */
+            .divider {
+                height: 1px;
+                background: var(--gray-100);
+                margin: 0;
+            }
+
+            /* Alerts list */
+            .alerts-list {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .alert-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 10px;
+                border: 1.5px solid var(--gray-100);
+                border-radius: var(--radius-sm);
+                transition: border-color var(--transition);
+            }
+
+            .alert-row:hover {
+                border-color: var(--gray-200);
+            }
+
+            .alert-row input[type="checkbox"] {
+                accent-color: var(--gray-600);
+            }
+
+            .alert-row-label {
+                font-size: 13px;
+                color: var(--gray-700);
+                flex: 1;
+            }
+
+            .alert-row-badge {
+                font-size: 10.5px;
+                padding: 2px 7px;
+                border-radius: 99px;
+                background: var(--red-light);
+                color: #b91c1c;
+                font-weight: 500;
+            }
+
+            .alert-row-badge.badge-default {
+                background: var(--gray-100);
+                color: var(--gray-500);
+            }
+
+            .btn-remove-alert {
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: var(--gray-300);
+                font-size: 14px;
+                line-height: 1;
+                padding: 2px 4px;
+                border-radius: 3px;
+                transition: color var(--transition);
+            }
+
+            .btn-remove-alert:hover {
+                color: var(--gray-600);
+            }
+
+            /* Add alert row */
+            .add-alert-row {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .add-alert-row input {
+                width: 90px;
+                padding: 7px 10px;
+                border: 1.5px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                font-family: var(--font);
+                font-size: 13px;
+                color: var(--gray-800);
+                outline: none;
+                transition: border-color var(--transition);
+                appearance: textfield;
+                -moz-appearance: textfield;
+            }
+
+            .add-alert-row input:focus {
+                border-color: var(--gray-500);
+            }
+
+            /* Toggle switch */
+            .toggle-switch {
+                position: relative;
+                display: inline-flex;
+                cursor: pointer;
+                margin-left: auto;
+            }
+
+            .toggle-switch input {
+                display: none;
+            }
+
+            .toggle-track {
+                width: 34px;
+                height: 18px;
+                border-radius: 99px;
+                background: var(--gray-200);
+                position: relative;
+                transition: background var(--transition);
+            }
+
+            .toggle-track::after {
+                content: "";
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: var(--white);
+                transition: transform var(--transition);
+            }
+
+            .toggle-switch input:checked + .toggle-track {
+                background: var(--gray-600);
+            }
+            .toggle-switch input:checked + .toggle-track::after {
+                transform: translateX(16px);
+            }
+
+            /* Break config */
+            .break-config {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+                background: var(--purple-light);
+                border: 1px solid #e9d5ff;
+                border-radius: var(--radius-sm);
+                opacity: 0.45;
+                pointer-events: none;
+                transition: opacity var(--transition);
+            }
+
+            .break-config.enabled {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            /* CTA row */
+            .cta-row {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .test-mode-container {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: auto;
+                font-size: 13px;
+                color: var(--gray-500);
+            }
+
+            /* ── Botones ───────────────────────────────────────────────── */
+            .btn-primary {
+                padding: 11px 28px;
+                background: var(--gray-900);
+                color: var(--white);
+                border: none;
+                border-radius: var(--radius-sm);
+                font-family: var(--font);
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background var(--transition);
+                letter-spacing: 0.1px;
+            }
+
+            .btn-primary:hover {
+                background: var(--gray-700);
+            }
+
+            .btn-outline {
+                padding: 9px 18px;
+                background: var(--white);
+                color: var(--gray-700);
+                border: 1.5px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                font-family: var(--font);
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                transition:
+                    border-color var(--transition),
+                    color var(--transition);
+            }
+
+            .btn-outline:hover {
+                border-color: var(--gray-400);
+                color: var(--gray-900);
+            }
+
+            .btn-outline.btn-sm {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .btn-ghost {
+                padding: 9px 18px;
+                background: none;
+                color: var(--gray-500);
+                border: none;
+                font-family: var(--font);
+                font-size: 13px;
+                cursor: pointer;
+                transition: color var(--transition);
+                border-radius: var(--radius-sm);
+            }
+
+            .btn-ghost:hover {
+                color: var(--gray-800);
+                background: var(--gray-100);
+            }
+
+            .btn-ghost-sm {
+                padding: 5px 10px;
+                background: none;
+                color: var(--gray-400);
+                border: 1px solid var(--gray-200);
+                border-radius: var(--radius-sm);
+                font-family: var(--font);
+                font-size: 12px;
+                cursor: pointer;
+                transition:
+                    color var(--transition),
+                    border-color var(--transition);
+            }
+
+            .btn-ghost-sm:hover {
+                color: var(--gray-700);
+                border-color: var(--gray-400);
+            }
+
+            /* ── Timer screen ─────────────────────────────────────────── */
+            #screen-timer {
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+                background: var(--gray-50);
+            }
+
+            #clock-container {
+                display: grid;
+                grid-template-rows: auto 1fr;
+                height: 100%;
+            }
+
+            /* ── Header ─────────────────────────────────────────────── */
+            .t-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 20px;
+                height: 48px;
+                background: var(--white);
+                border-bottom: 1px solid var(--gray-100);
+                gap: 16px;
+                transition:
+                    background 0.6s ease,
+                    border-color 0.6s ease;
+            }
+
+            .t-header-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                min-width: 0;
+                overflow: hidden;
+            }
+
+            .t-phase-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: var(--gray-400);
+                flex-shrink: 0;
+                animation: t-pulse 2.4s ease-in-out infinite;
+            }
+
+            @keyframes t-pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.2;
+                }
+            }
+
+            .t-phase-text {
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: var(--gray-400);
+                white-space: nowrap;
+                transition: color 0.5s ease;
+            }
+
+            .t-vsep {
+                width: 1px;
+                height: 14px;
+                background: var(--gray-200);
+                flex-shrink: 0;
+            }
+
+            .t-exam-title {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--gray-700);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .t-duration-text {
+                font-size: 12px;
+                color: var(--gray-400);
+                white-space: nowrap;
+            }
+
+            .t-header-right {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+
+            /* ── Layout 2 columnas ──────────────────────────────────── */
+            .t-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                padding: 12px 20px 16px;
+                min-height: 0;
+            }
+
+            /* ── Card base ──────────────────────────────────────────── */
+            .t-card {
+                background: var(--white);
+                border: 1px solid var(--gray-100);
+                border-radius: 8px;
+            }
+
+            .t-card-label {
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: var(--gray-400);
+            }
+
+            /* ── Columna izquierda: countdown ───────────────────────── */
+            .t-card-main {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 24px 20px;
+                transition:
+                    background 0.6s ease,
+                    border-color 0.6s ease;
+            }
+
+            .t-card-eyebrow {
+                font-size: 18px;
+                font-weight: 500;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: var(--gray-400);
+                margin-bottom: 20px;
+                transition: color 0.5s ease;
+            }
+
+            .countdown-row {
+                display: flex;
+                align-items: flex-end;
+                gap: clamp(12px, 2.5vw, 40px);
+            }
+
+            .countdown-group {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .countdown-num {
+                font-size: clamp(56px, 7vw, 112px);
+                font-weight: 500;
+                font-variant-numeric: tabular-nums;
+                letter-spacing: -3px;
+                color: var(--gray-800);
+                line-height: 1;
+                transition: color 0.5s ease;
+            }
+
+            .countdown-unit {
+                font-size: clamp(18px, 1vw, 16px);
+                color: var(--gray-400);
+                letter-spacing: 0.8px;
+            }
+
+            /* ── Columna derecha ────────────────────────────────────── */
+            .t-right-col {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-height: 0;
+            }
+
+            /* Fila de 3 info cards */
+            .t-info-row {
+                display: flex;
+                gap: 8px;
+            }
+
+            .t-info-card {
+                flex: 1;
+                background: var(--white);
+                border: 1px solid var(--gray-100);
+                border-radius: 8px;
+                padding: 12px 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .t-info-val {
+                font-size: clamp(26px, 2.8vw, 44px);
+                font-weight: 200;
+                font-variant-numeric: tabular-nums;
+                color: var(--gray-800);
+                letter-spacing: -1px;
+                line-height: 1;
+            }
+
+            /* Barra de progreso */
+            .t-card-progress {
+                padding: 10px 16px 13px;
+            }
+
+            .t-progress-track {
+                position: relative;
+                height: 5px;
+                background: var(--gray-100);
+                border-radius: 99px;
+                overflow: visible;
+                margin: 8px 0 18px;
+            }
+
+            .t-progress-fill {
+                position: absolute;
+                inset: 0 auto 0 0;
+                width: 0%;
+                background: var(--gray-300);
+                border-radius: 99px;
+                transition:
+                    width 1s linear,
+                    background 1s ease;
+            }
+
+            .t-tick {
+                position: absolute;
+                top: -4px;
+                bottom: -4px;
+                width: 1.5px;
+                transform: translateX(-50%);
+                background: var(--gray-300);
+                border-radius: 1px;
+                z-index: 2;
+            }
+
+            .t-tick.tick-fired {
+                opacity: 0.2;
+            }
+
+            .t-tick-label {
+                position: absolute;
+                top: calc(100% + 5px);
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 8px;
+                font-weight: 600;
+                color: var(--gray-400);
+                white-space: nowrap;
+            }
+
+            .t-progress-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 11px;
+                color: var(--gray-400);
+                font-variant-numeric: tabular-nums;
+            }
+
+            .t-prog-piece {
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                white-space: nowrap;
+            }
+
+            .t-prog-time {
+                font-weight: 600;
+                color: var(--gray-600);
+            }
+
+            /* Avisos */
+  /* ── Ajustes para tarjetas de avisos (Responsivas y de alto contraste) ── */
+
+.t-card-alerts {
+    padding: 20px; /* Más espacio interno */
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.t-alerts-toprow {
+    display: flex;
     align-items: center;
-  }
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-100);
 }
 
-/* Sidebar Info */
-.timer-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.t-alerts-label {
+    font-size: 11px; /* Ligeramente más grande para visibilidad */
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray-600); /* Mayor contraste */
 }
 
-.info-card {
-  border: 1px solid var(--gray-100);
-  background: var(--gray-50);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.t-alerts-inline {
+    display: flex;
+    flex-direction: column; /* Cambiado a columna para orden */
+    gap: 10px;
 }
 
-.info-card-header {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--gray-500);
-  border-bottom: 1px solid var(--gray-200);
-  padding-bottom: 8px;
+.t-alerts-inline .alert-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--white);
+    border: 2px solid var(--gray-200); /* Borde más visible */
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.t-alerts-inline .alert-row:hover {
+    border-color: var(--gray-400);
+    background: var(--gray-50);
 }
 
-.info-label {
-  font-size: 12.5px;
-  color: var(--gray-500);
+/* Checkbox grande para visibilidad en proyector */
+.t-alerts-inline .alert-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--gray-800);
 }
 
-.info-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gray-800);
+.t-alerts-inline .alert-row-label {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-900);
 }
 
-.time-large {
-  font-size: 18px;
-  color: var(--gray-900);
-  font-variant-numeric: tabular-nums;
+.t-alerts-inline .t-alerts-inline .alert-row-badge {
+    font-size: 14px;
+    padding: 4px 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border-radius: 4px;
 }
 
-/* Clock Main Area */
-.clock-main-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
+            .t-alerts-inline .btn-remove-alert {
+                font-size: 13px;
+                line-height: 1;
+                color: var(--gray-300);
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 0 0 0 2px;
+                transition: color 0.15s ease;
+            }
 
-.timer-topbar-center {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+            .t-alerts-inline .btn-remove-alert:hover {
+                color: var(--gray-600);
+            }
 
-.timer-exam-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gray-700);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
+            /* ── Estados de advertencia ─────────────────────────────── */
+            #clock-container.warn-15 .t-header {
+                background: #fffbeb;
+                border-bottom-color: #fde68a;
+            }
+            #clock-container.warn-5 .t-header {
+                background: #fff1f2;
+                border-bottom-color: #fca5a5;
+            }
 
-.clock-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-}
+            #clock-container.warn-15 .t-phase-dot {
+                background: #f59e0b;
+                animation: none;
+            }
+            #clock-container.warn-5 .t-phase-dot {
+                background: #ef4444;
+                animation: none;
+            }
+            #clock-container.warn-15 .t-phase-text {
+                color: #92400e;
+            }
+            #clock-container.warn-5 .t-phase-text {
+                color: #991b1b;
+            }
 
-.clock-phase-label {
-  font-size: 12px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--gray-400);
-}
+            #clock-container.warn-15 .t-card-main {
+                background: #fffbeb;
+                border-color: #fde68a;
+            }
+            #clock-container.warn-5 .t-card-main {
+                background: #fff1f2;
+                border-color: #fca5a5;
+            }
 
-.clock-display {
-  font-size: clamp(72px, 12vw, 160px);
-  font-weight: 300;
-  letter-spacing: -4px;
-  color: var(--gray-800);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
+            #clock-container.warn-15 .countdown-num {
+                color: #b45309;
+            }
+            #clock-container.warn-5 .countdown-num {
+                color: #b91c1c;
+            }
+            #clock-container.warn-15 .t-card-eyebrow {
+                color: #92400e;
+            }
+            #clock-container.warn-5 .t-card-eyebrow {
+                color: #991b1b;
+            }
 
-/* Progress bar */
-.clock-progress-wrap {
-  width: 100%;
-  max-width: 400px;
-  height: 3px;
-  background: var(--gray-100);
-  border-radius: 99px;
-  overflow: hidden;
-  margin-top: 4px;
-}
+            #clock-container.warn-15 .t-progress-fill {
+                background: #f59e0b;
+            }
+            #clock-container.warn-5 .t-progress-fill {
+                background: #ef4444;
+            }
 
-.clock-progress-bar {
-  height: 100%;
-  width: 100%;
-  background: var(--gray-400);
-  border-radius: 99px;
-  transform-origin: left;
-  transition: width 1s linear;
-}
+            /* ── Pausado ────────────────────────────────────────────── */
+            #clock-container.paused .t-phase-dot {
+                animation: none;
+                opacity: 0.3;
+            }
 
-.clock-sublabel {
-  font-size: 12px;
-  color: var(--gray-400);
-  letter-spacing: 0.3px;
-}
+            #clock-container.paused .countdown-num {
+                animation: t-blink 1.8s ease-in-out infinite;
+            }
 
-/* Warning state */
-.clock-container.warn-60  .clock-display { color: var(--gray-700); }
-.clock-container.warn-30  .clock-display { color: var(--gray-700); }
-.clock-container.warn-15  .clock-display { color: #b45309; }
-.clock-container.warn-5   .clock-display { color: #b91c1c; }
+            @keyframes t-blink {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.2;
+                }
+            }
 
-.clock-container.warn-15 .clock-phase-label { color: #92400e; }
-.clock-container.warn-5  .clock-phase-label { color: #991b1b; }
+            /* ── Break screen ─────────────────────────────────────────── */
+            #screen-break {
+                background: var(--gray-50);
+                justify-content: center;
+                align-items: center;
+            }
 
-.timer-controls {
-  display: flex;
-  gap: 10px;
-}
+            .break-layout {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 24px;
+                padding: 48px 40px;
+                border-radius: 24px;
+                background: var(--white);
+                border: 1px solid var(--gray-100);
+                max-width: 440px;
+                width: 90%;
+            }
 
-/* Live alerts panel */
-.live-alerts-panel {
-  border: 1px solid var(--gray-100);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: var(--gray-50);
-}
+            .break-badge {
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: var(--gray-500);
+                padding: 5px 16px;
+                border: 1px solid var(--gray-200);
+                border-radius: 99px;
+                background: var(--gray-50);
+            }
 
-.live-alerts-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--gray-200);
-  padding-bottom: 8px;
-}
+            .clock-display-break {
+                font-size: clamp(64px, 14vw, 112px);
+                font-weight: 200;
+                letter-spacing: -4px;
+                color: var(--gray-600);
+                font-variant-numeric: tabular-nums;
+                line-height: 1;
+            }
 
-.live-alerts-title {
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--gray-500);
-}
+            .break-hint {
+                font-size: 13px;
+                color: var(--gray-400);
+                text-align: center;
+                max-width: 300px;
+                line-height: 1.6;
+            }
 
-.alerts-list-sm .alert-row {
-  padding: 6px 8px;
-  background: var(--white);
-}
+            /* ── Done screen ──────────────────────────────────────────── */
+            #screen-done {
+                background: var(--white);
+                justify-content: center;
+                align-items: center;
+            }
 
-.alerts-list-sm .alert-row-label {
-  font-size: 12px;
-}
+            .done-layout {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+                text-align: center;
+            }
 
-/* ── Break screen ─────────────────────────────────────────── */
-#screen-break {
-  background: var(--gray-50);
-  justify-content: center;
-  align-items: center;
-}
+            .done-icon {
+                font-size: 48px;
+                color: var(--gray-200);
+                line-height: 1;
+                margin-bottom: 8px;
+            }
 
-.break-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
+            .done-title {
+                font-size: 40px;
+                font-weight: 200;
+                letter-spacing: -2px;
+                color: var(--gray-800);
+            }
 
-.break-badge {
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--gray-500);
-  padding: 4px 14px;
-  border: 1px solid var(--gray-300);
-  border-radius: 99px;
-}
+            .done-sub {
+                font-size: 14px;
+                color: var(--gray-400);
+                margin-bottom: 8px;
+            }
 
-.clock-display-break {
-  font-size: clamp(60px, 14vw, 110px);
-  font-weight: 300;
-  letter-spacing: -3px;
-  color: var(--gray-600);
-  font-variant-numeric: tabular-nums;
-}
+            /* ── Toast notifications ──────────────────────────────────── */
+            #toast-container {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                z-index: 9999;
+                pointer-events: none;
+            }
 
-.break-hint {
-  font-size: 13px;
-  color: var(--gray-400);
-}
+            .toast {
+                pointer-events: auto;
+                padding: 12px 18px;
+                background: var(--gray-900);
+                color: var(--white);
+                border-radius: var(--radius-sm);
+                font-size: 13px;
+                font-weight: 400;
+                line-height: 1.4;
+                max-width: 300px;
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                animation: toast-in 200ms ease;
+                border-left: 3px solid var(--gray-500);
+            }
 
-/* ── Done screen ──────────────────────────────────────────── */
-#screen-done {
-  background: var(--white);
-  justify-content: center;
-  align-items: center;
-}
+            .toast.toast-warn {
+                border-left-color: #f59e0b;
+            }
+            .toast.toast-danger {
+                border-left-color: #ef4444;
+            }
+            .toast.toast-done {
+                border-left-color: #22c55e;
+            }
 
-.done-layout {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
+            .toast-msg {
+                flex: 1;
+            }
 
-.done-icon {
-  font-size: 40px;
-  color: var(--gray-300);
-  line-height: 1;
-}
+            .toast-close {
+                background: none;
+                border: none;
+                color: var(--gray-400);
+                cursor: pointer;
+                font-size: 14px;
+                padding: 0;
+                line-height: 1;
+                flex-shrink: 0;
+            }
 
-.done-title {
-  font-size: 36px;
-  font-weight: 300;
-  letter-spacing: -1.5px;
-  color: var(--gray-800);
-}
+            .toast-close:hover {
+                color: var(--white);
+            }
 
-.done-sub {
-  font-size: 14px;
-  color: var(--gray-400);
-}
+            @keyframes toast-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 
-/* ── Toast notifications ──────────────────────────────────── */
-#toast-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 9999;
-  pointer-events: none;
-}
+            /* ── Fullscreen tweak ─────────────────────────────────────── */
+            :fullscreen #screen-timer,
+            :-webkit-full-screen #screen-timer {
+                min-height: 100vh;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="toast-container" aria-live="polite"></div>
 
-.toast {
-  pointer-events: auto;
-  padding: 12px 18px;
-  background: var(--gray-900);
-  color: var(--white);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.4;
-  max-width: 300px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  animation: toast-in 200ms ease;
-  border-left: 3px solid var(--gray-500);
-}
+        <div id="screen-setup" class="screen active">
+            <div class="setup-layout">
+                <header class="app-header">
+                    <div class="app-brand">
+                        <span class="brand-name">Cronómetro PAES</span>
+                    </div>
+                    <p class="app-desc">
+                        Herramienta de simulación para ensayos PAES. Configura
+                        la prueba, la hora de inicio, los tiempos de aviso y el
+                        descanso.
+                    </p>
+                </header>
 
-.toast.toast-warn   { border-left-color: #f59e0b; }
-.toast.toast-danger { border-left-color: #ef4444; }
-.toast.toast-done   { border-left-color: #22c55e; }
+                <section class="tutorial-strip">
+                    <div class="tutorial-step">
+                        <span class="step-num">1</span>
+                        <span class="step-text"
+                            >Selecciona la prueba o ingresa un tiempo
+                            personalizado</span
+                        >
+                    </div>
+                    <div class="tutorial-sep">/</div>
+                    <div class="tutorial-step">
+                        <span class="step-num">2</span>
+                        <span class="step-text"
+                            >Ajusta la hora de inicio y los avisos</span
+                        >
+                    </div>
+                    <div class="tutorial-sep">/</div>
+                    <div class="tutorial-step">
+                        <span class="step-num">3</span>
+                        <span class="step-text"
+                            >Presiona Iniciar</span
+                        >
+                    </div>
+                </section>
 
-.toast-msg { flex: 1; }
+                <div class="setup-grid">
+                    <div class="panel">
+                        <div class="panel-label">
+                            <span
+                                class="label-dot"
+                                style="background: #93c5fd"
+                            ></span>
+                            Prueba a rendir
+                        </div>
 
-.toast-close {
-  background: none;
-  border: none;
-  color: var(--gray-400);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0;
-  line-height: 1;
-  flex-shrink: 0;
-}
+                        <div class="exam-grid" id="exam-grid"></div>
 
-.toast-close:hover { color: var(--white); }
+                        <div class="divider"></div>
 
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+                        <div class="field-group">
+                            <label class="field-label">
+                                <span
+                                    class="label-dot"
+                                    style="background: #86efac"
+                                ></span>
+                                Duración personalizada
+                            </label>
+                            <div class="time-inputs">
+                                <div class="time-input-wrap">
+                                    <input
+                                        type="number"
+                                        id="custom-hours"
+                                        min="0"
+                                        max="9"
+                                        value="2"
+                                        placeholder="0"
+                                    />
+                                    <span class="time-unit">h</span>
+                                </div>
+                                <span class="time-colon">:</span>
+                                <div class="time-input-wrap">
+                                    <input
+                                        type="number"
+                                        id="custom-minutes"
+                                        min="0"
+                                        max="59"
+                                        value="30"
+                                        placeholder="0"
+                                    />
+                                    <span class="time-unit">min</span>
+                                </div>
+                            </div>
+                            <button
+                                class="btn-outline btn-sm"
+                                id="btn-use-custom"
+                                style="margin-top: 4px; width: fit-content"
+                            >
+                                Aplicar tiempo personalizado
+                            </button>
+                        </div>
 
-/* ── Fullscreen tweak ─────────────────────────────────────── */
-:fullscreen #screen-timer,
-:-webkit-full-screen #screen-timer {
-  min-height: 100vh;
-}
-</style>
-</head>
-<body>
+                        <div class="selected-time-display">
+                            <span class="selected-label">Tiempo total</span>
+                            <span class="selected-value" id="selected-value"
+                                >2h 30min</span
+                            >
+                            <span class="selected-source" id="selected-source"
+                                >Competencia Lectora</span
+                            >
+                        </div>
 
-  <div id="toast-container" aria-live="polite"></div>
+                        <div class="schedule-group">
+                            <div class="schedule-item">
+                                <label class="field-label"
+                                    >Hora de inicio</label
+                                >
+                                <div class="time-input-wrap">
+                                    <input type="time" id="setup-start-time" />
+                                </div>
+                            </div>
+                            <span class="time-colon">/</span>
+                            <div class="schedule-item">
+                                <label class="field-label"
+                                    >Hora de término estimada</label
+                                >
+                                <span
+                                    class="schedule-item-val"
+                                    id="setup-end-time"
+                                    >--:--</span
+                                >
+                            </div>
+                        </div>
+                    </div>
 
-  <div id="screen-setup" class="screen active">
-    <div class="setup-layout">
+                    <div class="panel">
+                        <div class="panel-label">
+                            <span
+                                class="label-dot"
+                                style="background: #fca5a5"
+                            ></span>
+                            Avisos de tiempo restante
+                        </div>
+                        <p class="panel-hint">
+                            Active o desactive cada aviso. También puede añadir
+                            uno personalizado.
+                        </p>
 
-      <header class="app-header">
-        <div class="app-brand">
-          <span class="brand-name">Cronómetro PAES</span>
-        </div>
-        <p class="app-desc">
-          Herramienta de simulación para ensayos PAES. Configure la prueba, la hora de inicio, los tiempos de aviso y el descanso.
-        </p>
-      </header>
+                        <div id="alerts-list" class="alerts-list"></div>
 
-      <section class="tutorial-strip">
-        <div class="tutorial-step">
-          <span class="step-num">1</span>
-          <span class="step-text">Elija la prueba o ingrese un tiempo personalizado</span>
-        </div>
-        <div class="tutorial-sep">/</div>
-        <div class="tutorial-step">
-          <span class="step-num">2</span>
-          <span class="step-text">Ajuste la hora de inicio y los avisos</span>
-        </div>
-        <div class="tutorial-sep">/</div>
-        <div class="tutorial-step">
-          <span class="step-num">3</span>
-          <span class="step-text">Presione Iniciar y proyecte en pantalla completa</span>
-        </div>
-      </section>
+                        <div class="add-alert-row">
+                            <input
+                                type="number"
+                                id="new-alert-minutes"
+                                min="1"
+                                max="999"
+                                placeholder="minutos"
+                            />
+                            <button
+                                class="btn-outline btn-sm"
+                                id="btn-add-alert"
+                            >
+                                + Añadir aviso
+                            </button>
+                        </div>
 
-      <div class="setup-grid">
+                        <div class="divider"></div>
 
-        <div class="panel">
-          <div class="panel-label">
-            <span class="label-dot" style="background: #93c5fd;"></span>
-            Prueba a rendir
-          </div>
+                        <div class="panel-label">
+                            <span
+                                class="label-dot"
+                                style="background: #d8b4fe"
+                            ></span>
+                            Descanso entre secciones
+                            <label
+                                class="toggle-switch"
+                                title="Activar descanso"
+                            >
+                                <input type="checkbox" id="break-enabled" />
+                                <span class="toggle-track"></span>
+                            </label>
+                        </div>
 
-          <div class="exam-grid" id="exam-grid"></div>
-
-          <div class="divider"></div>
-
-          <div class="field-group">
-            <label class="field-label">
-              <span class="label-dot" style="background: #86efac;"></span>
-              Duración personalizada
-            </label>
-            <div class="time-inputs">
-              <div class="time-input-wrap">
-                <input type="number" id="custom-hours" min="0" max="9" value="2" placeholder="0" />
-                <span class="time-unit">h</span>
-              </div>
-              <span class="time-colon">:</span>
-              <div class="time-input-wrap">
-                <input type="number" id="custom-minutes" min="0" max="59" value="30" placeholder="0" />
-                <span class="time-unit">min</span>
-              </div>
-            </div>
-            <button class="btn-outline btn-sm" id="btn-use-custom" style="margin-top: 4px; width: fit-content;">Aplicar tiempo personalizado</button>
-          </div>
-
-          <div class="selected-time-display">
-            <span class="selected-label">Tiempo total</span>
-            <span class="selected-value" id="selected-value">2h 30min</span>
-            <span class="selected-source" id="selected-source">Competencia Lectora</span>
-          </div>
-          
-          <div class="schedule-group">
-            <div class="schedule-item">
-              <label class="field-label">Hora de inicio</label>
-              <div class="time-input-wrap">
-                <input type="time" id="setup-start-time" />
-              </div>
-            </div>
-            <span class="time-colon">/</span>
-            <div class="schedule-item">
-              <label class="field-label">Hora de término estimada</label>
-              <span class="schedule-item-val" id="setup-end-time">--:--</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-label">
-            <span class="label-dot" style="background: #fca5a5;"></span>
-            Avisos de tiempo restante
-          </div>
-          <p class="panel-hint">Active o desactive cada aviso. También puede añadir uno personalizado.</p>
-
-          <div id="alerts-list" class="alerts-list"></div>
-
-          <div class="add-alert-row">
-            <input type="number" id="new-alert-minutes" min="1" max="999" placeholder="minutos" />
-            <button class="btn-outline btn-sm" id="btn-add-alert">+ Añadir aviso</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="panel-label">
-            <span class="label-dot" style="background: #d8b4fe;"></span>
-            Descanso entre secciones
-            <label class="toggle-switch" title="Activar descanso">
-              <input type="checkbox" id="break-enabled" />
-              <span class="toggle-track"></span>
-            </label>
-          </div>
-
-          <div class="break-config" id="break-config">
-            <div class="field-group">
-              <label class="field-label">Duración del descanso</label>
-              <div class="time-inputs">
-                <div class="time-input-wrap">
-                  <input type="number" id="break-minutes" min="1" max="60" value="10" />
-                  <span class="time-unit">min</span>
+                        <div class="break-config" id="break-config">
+                            <div class="field-group">
+                                <label class="field-label"
+                                    >Duración del descanso</label
+                                >
+                                <div class="time-inputs">
+                                    <div class="time-input-wrap">
+                                        <input
+                                            type="number"
+                                            id="break-minutes"
+                                            min="1"
+                                            max="60"
+                                            value="10"
+                                        />
+                                        <span class="time-unit">min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="panel-hint">
+                                El descanso se ejecuta <em>antes</em> del tiempo
+                                principal, mostrando una pantalla de pausa
+                                temporal.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-              </div>
+
+                <div class="cta-row">
+                    <button class="btn-primary" id="btn-start">
+                        Iniciar cronómetro
+                    </button>
+                    <button class="btn-ghost" id="btn-fullscreen-setup">
+                        [ ] Pantalla completa
+                    </button>
+                    <div class="test-mode-container">
+                        <label
+                            class="toggle-switch"
+                            title="Modo de prueba rápida (x60 de velocidad)"
+                        >
+                            <input type="checkbox" id="test-mode-toggle" />
+                            <span class="toggle-track"></span>
+                        </label>
+                        <span>Modo de prueba rápida</span>
+                    </div>
+                </div>
             </div>
-            <p class="panel-hint">El descanso se ejecuta <em>antes</em> del tiempo principal, mostrando una pantalla de pausa temporal.</p>
-          </div>
         </div>
 
-      </div>
+        <div id="screen-timer" class="screen">
+            <div id="clock-container">
+                <!-- Header -->
+                <header class="t-header">
+                    <div class="t-header-left">
+                        <div class="t-phase-dot"></div>
+                        <span class="t-phase-text" id="clock-phase-label"
+                            >Ensayo en curso</span
+                        >
+                        <div class="t-vsep"></div>
+                        <span class="t-exam-title" id="timer-exam-name"
+                            >Competencia Lectora</span
+                        >
+                        <span class="t-duration-text" id="timer-info-duration"
+                            >2h 30min</span
+                        >
+                        <span id="timer-info-name" style="display: none"></span>
+                    </div>
+                    <div class="t-header-right">
+                        <button class="btn-primary" id="btn-pause">
+                            &#9646;&#9646; Pausar
+                        </button>
+                        <button class="btn-outline" id="btn-reset">
+                            &#8635; Reiniciar
+                        </button>
+                        <button class="btn-ghost-sm" id="btn-fullscreen">
+                            &#x26F6; Pantalla completa
+                        </button>
+                        <button class="btn-ghost-sm" id="btn-back">
+                            &#x2715; Finalizar
+                        </button>
+                    </div>
+                </header>
 
-      <div class="cta-row">
-        <button class="btn-primary" id="btn-start">Iniciar cronómetro</button>
-        <button class="btn-ghost" id="btn-fullscreen-setup">[ ] Pantalla completa</button>
-        <div class="test-mode-container">
-          <label class="toggle-switch" title="Modo de prueba rápida (x60 de velocidad)">
-            <input type="checkbox" id="test-mode-toggle" />
-            <span class="toggle-track"></span>
-          </label>
-          <span>Modo de prueba rápida</span>
+                <!-- Layout 2 columnas -->
+                <div class="t-layout">
+                    <!-- Izquierda: cuenta regresiva -->
+                    <div class="t-card t-card-main">
+                        <div class="t-card-eyebrow" id="t-countdown-label">
+                            Quedan
+                        </div>
+                        <div class="countdown-row">
+                            <div class="countdown-group" id="cnt-h-group">
+                                <span class="countdown-num" id="cnt-h">2</span>
+                                <span class="countdown-unit" id="cnt-h-unit"
+                                    >HORAS</span
+                                >
+                            </div>
+                            <div class="countdown-group">
+                                <span class="countdown-num" id="cnt-m">30</span>
+                                <span class="countdown-unit" id="cnt-m-unit"
+                                    >MINUTOS</span
+                                >
+                            </div>
+                            <div class="countdown-group">
+                                <span class="countdown-num" id="cnt-s">00</span>
+                                <span class="countdown-unit">SEGUNDOS</span>
+                            </div>
+                        </div>
+                        <span id="clock-display" style="display: none"
+                            >02:30:00</span
+                        >
+                    </div>
+
+                    <!-- Derecha: hora + progreso + avisos -->
+                    <div class="t-right-col">
+                        <!-- Hora actual / Inicio / Término -->
+                        <div class="t-info-row">
+                            <div class="t-info-card">
+                                <div class="t-card-label">Hora actual</div>
+                                <div class="t-info-val" id="live-clock">
+                                    --:--:--
+                                </div>
+                            </div>
+                            <div class="t-info-card">
+                                <div class="t-card-label">Inicio</div>
+                                <div class="t-info-val" id="live-start-time">
+                                    --:--
+                                </div>
+                            </div>
+                            <div class="t-info-card">
+                                <div class="t-card-label">Término</div>
+                                <div class="t-info-val" id="live-end-time">
+                                    --:--
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progreso -->
+                        <div class="t-card t-card-progress">
+                            <div class="t-progress-track">
+                                <div
+                                    class="t-progress-fill"
+                                    id="clock-progress-bar"
+                                ></div>
+                                <div id="t-alert-ticks"></div>
+                            </div>
+                            <div class="t-progress-row">
+                                <span class="t-prog-piece">
+                                    <span class="t-prog-time" id="t-prog-start"
+                                        >--:--</span
+                                    >
+                                    &middot;
+                                    <span id="t-elapsed-val">0:00</span>
+                                    transcurridos
+                                </span>
+                                <span class="t-prog-piece">
+                                    <span id="t-remain-val">--:--:--</span>
+                                    restantes &middot;
+                                    <span class="t-prog-time" id="t-prog-end"
+                                        >--:--</span
+                                    >
+                                </span>
+                            </div>
+                            <span id="t-progress-pct" style="display: none"
+                                >0%</span
+                            >
+                        </div>
+
+                        <!-- Avisos -->
+                        <div class="t-card t-card-alerts">
+                            <div class="t-alerts-toprow">
+                                <span class="t-alerts-label"
+                                    >Avisos activos</span
+                                >
+                                <div class="t-add-alert">
+                                    <input
+                                        type="number"
+                                        id="live-new-alert-minutes"
+                                        min="1"
+                                        max="999"
+                                        placeholder="min"
+                                        style="width: 50px"
+                                    />
+                                    <button
+                                        class="btn-outline btn-sm"
+                                        id="btn-live-add-alert"
+                                    >
+                                        + Añadir
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                id="live-alerts-list"
+                                class="alerts-list t-alerts-inline"
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
 
-    </div>
-  </div>
-
-
-  <div id="screen-timer" class="screen">
-    <div class="timer-layout">
-
-      <aside class="timer-sidebar">
-        <div class="info-card">
-          <div class="info-card-header">Detalles de la sesión</div>
-          <div class="info-row">
-            <span class="info-label">Prueba</span>
-            <span class="info-value" id="timer-info-name">Competencia Lectora</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Duración</span>
-            <span class="info-value" id="timer-info-duration">2h 30min</span>
-          </div>
+        <div id="screen-break" class="screen">
+            <div class="break-layout">
+                <div class="break-badge">&#9673; Descanso</div>
+                <div
+                    class="clock-display clock-display-break"
+                    id="break-display"
+                >
+                    00:10:00
+                </div>
+                <p class="break-hint">
+                    El ensayo comenzará automáticamente al terminar este
+                    período.
+                </p>
+                <button class="btn-outline" id="btn-skip-break">
+                    Omitir e iniciar ensayo &rarr;
+                </button>
+            </div>
         </div>
 
-        <div class="info-card">
-          <div class="info-card-header">Reloj del Aula</div>
-          <div class="info-row">
-            <span class="info-label">Hora actual</span>
-            <span class="info-value time-large" id="live-clock">--:--:--</span>
-          </div>
-          <div class="info-row" style="margin-top: 8px;">
-            <span class="info-label">Hora de inicio</span>
-            <span class="info-value" id="live-start-time">--:--</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Hora de término</span>
-            <span class="info-value" id="live-end-time">--:--</span>
-          </div>
-        </div>
-      </aside>
-
-      <main class="clock-main-area">
-        <div class="timer-topbar-center">
-          <div class="timer-exam-name" id="timer-exam-name">Competencia Lectora</div>
+        <div id="screen-done" class="screen">
+            <div class="done-layout">
+                <div class="done-icon">&#10003;</div>
+                <h1 class="done-title">Tiempo agotado</h1>
+                <p class="done-sub" id="done-exam-name">Competencia Lectora</p>
+                <button class="btn-primary" id="btn-new">
+                    Configurar nueva sesión
+                </button>
+            </div>
         </div>
 
-        <div class="clock-container" id="clock-container">
-          <div class="clock-phase-label">Ensayo en curso</div>
-          <div class="clock-display" id="clock-display">02:30:00</div>
-          <div class="clock-progress-wrap">
-            <div class="clock-progress-bar" id="clock-progress-bar"></div>
-          </div>
-          <div class="clock-sublabel">Tiempo restante</div>
-        </div>
-
-        <div class="timer-controls">
-          <button class="btn-outline" id="btn-pause">Pausar</button>
-          <button class="btn-outline" id="btn-reset">Reiniciar</button>
-          <button class="btn-ghost-sm" id="btn-back">Finalizar</button>
-          <button class="btn-ghost-sm" id="btn-fullscreen">[ ] Pantalla Completa</button>
-        </div>
-      </main>
-
-      <aside class="timer-sidebar">
-        <div class="live-alerts-panel">
-          <div class="live-alerts-header">
-            <span class="live-alerts-title">Avisos Programados</span>
-          </div>
-          <div id="live-alerts-list" class="alerts-list alerts-list-sm"></div>
-          <div class="add-alert-row" style="margin-top: 10px;">
-            <input type="number" id="live-new-alert-minutes" min="1" max="999" placeholder="min" />
-            <button class="btn-outline btn-sm" id="btn-live-add-alert">+ Añadir</button>
-          </div>
-        </div>
-      </aside>
-
-    </div>
-  </div>
-
-
-  <div id="screen-break" class="screen">
-    <div class="break-layout">
-      <div class="break-badge">Descanso temporal</div>
-      <div class="clock-display clock-display-break" id="break-display">00:10:00</div>
-      <p class="break-hint">El ensayo comenzará automáticamente al terminar este período.</p>
-      <button class="btn-outline" id="btn-skip-break">Omitir descanso / Iniciar ensayo</button>
-    </div>
-  </div>
-
-
-  <div id="screen-done" class="screen">
-    <div class="done-layout">
-      <div class="done-icon">/</div>
-      <h1 class="done-title">Tiempo agotado</h1>
-      <p class="done-sub" id="done-exam-name">Competencia Lectora</p>
-      <button class="btn-primary" id="btn-new">Configurar nueva sesión</button>
-    </div>
-  </div>
-
-
-<script>
-// ================================================================
-//  config.js — Configuración estática del cronómetro PAES
-// ================================================================
-
-const CONFIG = {
-  exams: [
-    { id: 'lectora',   name: 'Competencia Lectora',       shortName: 'Lectora',   minutes: 150 },
-    { id: 'm1',        name: 'Matemática M1',              shortName: 'Mat. M1',  minutes: 140 },
-    { id: 'm2',        name: 'Matemática M2',              shortName: 'Mat. M2',  minutes: 140 },
-    { id: 'ciencias',  name: 'Ciencias',                   shortName: 'Ciencias', minutes: 160 },
-    { id: 'historia',  name: 'Historia y Cs. Sociales',    shortName: 'Historia', minutes: 120 },
-  ],
-  defaultAlerts: [
-    { minutes: 60,  label: '1 hora restante',      removable: false },
-    { minutes: 30,  label: '30 minutos restantes', removable: false },
-    { minutes: 15,  label: '15 minutos restantes', removable: false },
-  ],
-  defaultBreakMinutes: 10,
-  toastDuration: 6000,
-  warnThresholds: { warn60: 60, warn30: 30, warn15: 15, warn5: 5 },
-};
-
-// ================================================================
-//  state.js — Estado global de la aplicación
-// ================================================================
-
-const State = {
-  selectedExam: null,
-  selectedMinutes: 150,
-  alerts: [],
-  breakEnabled: false,
-  breakMinutes: 10,
-  phase: 'idle',
-  totalSeconds: 0,
-  remainingSeconds: 0,
-  breakTotalSeconds: 0,
-  breakRemainingSeconds: 0,
-  testMode: false,
-  _intervalId: null,
-  _clockIntervalId: null,
-
-  setExam(exam) {
-    this.selectedExam = exam;
-    this.selectedMinutes = exam.minutes;
-  },
-
-  setCustomMinutes(h, m) {
-    this.selectedExam = null;
-    this.selectedMinutes = h * 60 + m;
-  },
-
-  initAlerts() {
-    this.alerts = CONFIG.defaultAlerts.map(a => ({ ...a, fired: false, enabled: true }));
-  },
-
-  addAlert(minutes) {
-    const exists = this.alerts.find(a => a.minutes === minutes);
-    if (exists) return false;
-    this.alerts.push({
-      minutes,
-      label: `${minutes} minuto${minutes !== 1 ? 's' : ''} restante${minutes !== 1 ? 's' : ''}`,
-      removable: true,
-      fired: false,
-      enabled: true,
-    });
-    this.alerts.sort((a, b) => b.minutes - a.minutes);
-    return true;
-  },
-
-  removeAlert(minutes) {
-    this.alerts = this.alerts.filter(a => a.minutes !== minutes);
-  },
-
-  toggleAlert(minutes, enabled) {
-    const a = this.alerts.find(a => a.minutes === minutes);
-    if (a) a.enabled = enabled;
-  },
-
-  resetFiredAlerts() {
-    this.alerts.forEach(a => { a.fired = false; });
-  },
-};
-
-// ================================================================
-//  sound.js — Sonidos mediante Web Audio API
-// ================================================================
-
-const Sound = (() => {
-  let ctx = null;
-  function getCtx() {
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    return ctx;
-  }
-  function beep(freq = 880, duration = 0.3, volume = 0.3) {
-    try {
-      const ac   = getCtx();
-      const osc  = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.connect(gain);
-      gain.connect(ac.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ac.currentTime);
-      gain.gain.setValueAtTime(volume, ac.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
-      osc.start(ac.currentTime);
-      osc.stop(ac.currentTime + duration);
-    } catch (e) { console.warn('Sound:', e); }
-  }
-  return {
-    alert() {
-      beep(660, 0.25, 0.28);
-      setTimeout(() => beep(660, 0.25, 0.28), 320);
-    },
-    urgentAlert() {
-      beep(820, 0.18, 0.3);
-      setTimeout(() => beep(820, 0.18, 0.3), 220);
-      setTimeout(() => beep(820, 0.18, 0.3), 440);
-    },
-    done() {
-      beep(523, 0.35, 0.3);
-      setTimeout(() => beep(659, 0.35, 0.3), 380);
-      setTimeout(() => beep(784, 0.5,  0.3), 760);
-    },
-    start() {
-      beep(523, 0.2, 0.2);
-      setTimeout(() => beep(659, 0.2, 0.2), 220);
-    },
-  };
-})();
-
-// ================================================================
-//  notifications.js — Toast UI + Notificaciones
-// ================================================================
-
-const Notifications = (() => {
-  async function requestPermission() {
-    if (!('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
-  }
-  function sendBrowserNotification(title, body) {
-    if (!('Notification' in window)) return;
-    if (Notification.permission !== 'granted') return;
-    try { new Notification(title, { body, tag: 'paes-timer', renotify: true }); } 
-    catch (e) {}
-  }
-  function showToast(message, type = 'default') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    const msg = document.createElement('span');
-    msg.className = 'toast-msg';
-    msg.textContent = message;
-    const close = document.createElement('button');
-    close.className = 'toast-close';
-    close.innerHTML = '×';
-    close.onclick = () => removeToast(toast);
-    toast.appendChild(msg);
-    toast.appendChild(close);
-    container.appendChild(toast);
-    setTimeout(() => removeToast(toast), CONFIG.toastDuration);
-  }
-  function removeToast(el) {
-    if (!el.parentNode) return;
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(6px)';
-    el.style.transition = '180ms ease';
-    setTimeout(() => el.remove(), 200);
-  }
-  return {
-    requestPermission,
-    alertMinutes(minutes, label) {
-      const isUrgent = minutes <= 15;
-      showToast(label, isUrgent ? 'danger' : 'warn');
-      sendBrowserNotification(`PAES — ${label}`, `Quedan ${label} para finalizar.`);
-    },
-    start(examName) { showToast(`Iniciando: ${examName}`, 'default'); },
-    done(examName) {
-      showToast(`¡Tiempo agotado! ${examName}`, 'done');
-      sendBrowserNotification('PAES — ¡Tiempo!', `La sesión de ${examName} ha concluido.`);
-    },
-    breakStart(minutes) { showToast(`Descanso: ${minutes} minutos`, 'default'); },
-    paused() { showToast('Cronómetro pausado', 'default'); },
-  };
-})();
-
-// ================================================================
-//  timer.js — Motor del cronómetro
-// ================================================================
-
-const Timer = (() => {
-  function pad(n) { return String(n).padStart(2, '0'); }
-  function formatSeconds(sec) {
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = sec % 60;
-    if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
-    return `${pad(m)}:${pad(s)}`;
-  }
-  function formatMinutes(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h > 0 && m > 0) return `${h}h ${m}min`;
-    if (h > 0) return `${h}h`;
-    return `${m}min`;
-  }
-
-  function start() {
-    State.resetFiredAlerts();
-    if (State.breakEnabled && State.breakMinutes > 0) {
-      _startBreak();
-    } else {
-      _startExam();
-    }
-    _startRealtimeClock();
-  }
-
-  function _startBreak() {
-    State.phase = 'break';
-    State.breakTotalSeconds = State.breakMinutes * 60;
-    State.breakRemainingSeconds = State.breakTotalSeconds;
-    UI.showScreen('break');
-    UI.updateBreakDisplay(formatSeconds(State.breakRemainingSeconds));
-    Notifications.breakStart(State.breakMinutes);
-    _clearInterval();
-    State._intervalId = setInterval(_tickBreak, 1000);
-  }
-
-  function _tickBreak() {
-    const speed = State.testMode ? 60 : 1;
-    State.breakRemainingSeconds -= speed;
-    if (State.breakRemainingSeconds < 0) State.breakRemainingSeconds = 0;
-    UI.updateBreakDisplay(formatSeconds(State.breakRemainingSeconds));
-    if (State.breakRemainingSeconds <= 0) {
-      _clearInterval();
-      _startExam();
-    }
-  }
-
-  function skipBreak() {
-    _clearInterval();
-    _startExam();
-  }
-
-  function _startExam() {
-    State.phase = 'running';
-    State.totalSeconds = State.selectedMinutes * 60;
-    State.remainingSeconds = State.totalSeconds;
-    
-    UI.showScreen('timer');
-    UI.updateClockDisplay(formatSeconds(State.remainingSeconds));
-    UI.updateProgress(1);
-    UI.setWarnClass(State.remainingSeconds);
-    UI.renderLiveAlerts();
-    UI.syncTimerDetails();
-    
-    const examName = State.selectedExam ? State.selectedExam.name : 'Personalizado';
-    Notifications.start(examName);
-    Sound.start();
-    _clearInterval();
-    State._intervalId = setInterval(_tickExam, 1000);
-  }
-
-  function _tickExam() {
-    if (State.phase !== 'running') return;
-    
-    const speed = State.testMode ? 60 : 1;
-    State.remainingSeconds -= speed;
-    if (State.remainingSeconds < 0) State.remainingSeconds = 0;
-    
-    const remaining = State.remainingSeconds;
-    UI.updateClockDisplay(formatSeconds(remaining));
-    UI.updateProgress(remaining / State.totalSeconds);
-    UI.setWarnClass(remaining);
-    _checkAlerts(remaining);
-
-    if (remaining <= 0) {
-      _clearInterval();
-      State.phase = 'done';
-      const examName = State.selectedExam ? State.selectedExam.name : 'Personalizado';
-      Sound.done();
-      Notifications.done(examName);
-      setTimeout(() => UI.showScreen('done'), 800);
-    }
-  }
-
-  function _checkAlerts(remainingSeconds) {
-    State.alerts.forEach(alert => {
-      if (!alert.enabled || alert.fired) return;
-      const threshold = alert.minutes * 60;
-      if (remainingSeconds <= threshold && remainingSeconds > threshold - (State.testMode ? 65 : 2)) {
-        alert.fired = true;
-        alert.minutes <= 15 ? Sound.urgentAlert() : Sound.alert();
-        Notifications.alertMinutes(alert.minutes, alert.label);
-      }
-    });
-  }
-
-  function togglePause() {
-    if (State.phase === 'running') {
-      State.phase = 'paused';
-      _clearInterval();
-      UI.setPauseLabel('Reanudar');
-      Notifications.paused();
-    } else if (State.phase === 'paused') {
-      State.phase = 'running';
-      State._intervalId = setInterval(_tickExam, 1000);
-      UI.setPauseLabel('Pausar');
-    }
-  }
-
-  function reset() {
-    _clearInterval();
-    State.phase = 'running';
-    State.remainingSeconds = State.totalSeconds;
-    State.resetFiredAlerts();
-    UI.setPauseLabel('Pausar');
-    UI.updateClockDisplay(formatSeconds(State.remainingSeconds));
-    UI.updateProgress(1);
-    UI.setWarnClass(State.remainingSeconds);
-    State._intervalId = setInterval(_tickExam, 1000);
-  }
-
-  function _clearInterval() {
-    if (State._intervalId) {
-      clearInterval(State._intervalId);
-      State._intervalId = null;
-    }
-  }
-  
-  function _startRealtimeClock() {
-    if (State._clockIntervalId) clearInterval(State._clockIntervalId);
-    State._clockIntervalId = setInterval(() => {
-      const now = new Date();
-      document.getElementById('live-clock').textContent = 
-        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    }, 1000);
-  }
-
-  function stop() {
-    _clearInterval();
-    if (State._clockIntervalId) clearInterval(State._clockIntervalId);
-    State.phase = 'idle';
-  }
-
-  function calculateSchedule() {
-    const startInput = document.getElementById('setup-start-time').value;
-    if (!startInput) return;
-    
-    const [h, m] = startInput.split(':').map(Number);
-    const duration = State.selectedMinutes;
-    
-    const endDate = new Date();
-    endDate.setHours(h, m, 0, 0);
-    endDate.setMinutes(endDate.getMinutes() + duration);
-    
-    const endStr = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
-    document.getElementById('setup-end-time').textContent = endStr;
-    
-    return { start: startInput, end: endStr };
-  }
-
-  return { start, skipBreak, togglePause, reset, stop, formatMinutes, calculateSchedule };
-})();
-
-// ================================================================
-//  ui.js — Manipulación del DOM
-// ================================================================
-
-const UI = (() => {
-  const screens = {
-    setup: document.getElementById('screen-setup'),
-    timer: document.getElementById('screen-timer'),
-    break: document.getElementById('screen-break'),
-    done:  document.getElementById('screen-done'),
-  };
-
-  function showScreen(name) {
-    Object.values(screens).forEach(s => s.classList.remove('active'));
-    if (screens[name]) screens[name].classList.add('active');
-  }
-
-  function renderExamGrid() {
-    const grid = document.getElementById('exam-grid');
-    grid.innerHTML = '';
-    CONFIG.exams.forEach(exam => {
-      const btn = document.createElement('button');
-      btn.className = 'exam-btn';
-      btn.dataset.examId = exam.id;
-      btn.innerHTML = `<span class="exam-btn-name">${exam.name}</span><span class="exam-btn-duration">${Timer.formatMinutes(exam.minutes)}</span>`;
-      btn.addEventListener('click', () => {
-        State.setExam(exam);
-        _syncCustomInputs(exam.minutes);
-        renderExamGrid();
-        updateSelectedDisplay();
-        Timer.calculateSchedule();
-      });
-      if (State.selectedExam && State.selectedExam.id === exam.id) {
-        btn.classList.add('active');
-      }
-      grid.appendChild(btn);
-    });
-  }
-
-  function _syncCustomInputs(minutes) {
-    document.getElementById('custom-hours').value = Math.floor(minutes / 60);
-    document.getElementById('custom-minutes').value = minutes % 60;
-  }
-
-  function updateSelectedDisplay() {
-    document.getElementById('selected-value').textContent = Timer.formatMinutes(State.selectedMinutes);
-    document.getElementById('selected-source').textContent = State.selectedExam ? State.selectedExam.name : 'Personalizado';
-  }
-
-  function renderAlertsList(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-    State.alerts.forEach(alert => {
-      const row = document.createElement('div');
-      row.className = 'alert-row';
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.checked = alert.enabled;
-      cb.addEventListener('change', () => {
-        State.toggleAlert(alert.minutes, cb.checked);
-        renderAlertsList('alerts-list');
-        renderAlertsList('live-alerts-list');
-      });
-      const label = document.createElement('span');
-      label.className = 'alert-row-label';
-      label.textContent = alert.label;
-      const badge = document.createElement('span');
-      badge.className = `alert-row-badge ${alert.removable ? '' : 'badge-default'}`;
-      badge.textContent = `${alert.minutes} min`;
-      row.appendChild(cb);
-      row.appendChild(label);
-      row.appendChild(badge);
-      if (alert.removable) {
-        const rm = document.createElement('button');
-        rm.className = 'btn-remove-alert';
-        rm.title = 'Eliminar aviso';
-        rm.innerHTML = '×';
-        rm.addEventListener('click', () => {
-          State.removeAlert(alert.minutes);
-          renderAlertsList('alerts-list');
-          renderAlertsList('live-alerts-list');
-        });
-        row.appendChild(rm);
-      }
-      container.appendChild(row);
-    });
-  }
-
-  function renderLiveAlerts() { renderAlertsList('live-alerts-list'); }
-
-  function updateClockDisplay(text) { document.getElementById('clock-display').textContent = text; }
-  function updateBreakDisplay(text) { document.getElementById('break-display').textContent = text; }
-
-  function updateProgress(ratio) {
-    const bar = document.getElementById('clock-progress-bar');
-    if (bar) bar.style.width = `${Math.max(0, ratio * 100)}%`;
-  }
-
-  function setWarnClass(remainingSeconds) {
-    const container = document.getElementById('clock-container');
-    if (!container) return;
-    const mins = remainingSeconds / 60;
-    container.classList.remove('warn-60', 'warn-30', 'warn-15', 'warn-5');
-    const { warn60, warn30, warn15, warn5 } = CONFIG.warnThresholds;
-    if      (mins <= warn5)  container.classList.add('warn-5');
-    else if (mins <= warn15) container.classList.add('warn-15');
-    else if (mins <= warn30) container.classList.add('warn-30');
-    else if (mins <= warn60) container.classList.add('warn-60');
-  }
-
-  function setPauseLabel(text) {
-    const btn = document.getElementById('btn-pause');
-    if (btn) btn.textContent = text;
-  }
-
-  function updateTimerExamName() {
-    const name = State.selectedExam ? State.selectedExam.name : 'Personalizado';
-    const el = document.getElementById('timer-exam-name');
-    if (el) el.textContent = name;
-    const done = document.getElementById('done-exam-name');
-    if (done) done.textContent = name;
-  }
-
-  function syncBreakUI() {
-    const enabled = document.getElementById('break-enabled').checked;
-    document.getElementById('break-config').classList.toggle('enabled', enabled);
-  }
-  
-  function syncTimerDetails() {
-    const name = State.selectedExam ? State.selectedExam.name : 'Personalizado';
-    document.getElementById('timer-info-name').textContent = name;
-    document.getElementById('timer-info-duration').textContent = Timer.formatMinutes(State.selectedMinutes);
-    
-    const schedule = Timer.calculateSchedule();
-    if (schedule) {
-      document.getElementById('live-start-time').textContent = schedule.start;
-      document.getElementById('live-end-time').textContent = schedule.end;
-    }
-  }
-
-  function initDefaultTime() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const input = document.getElementById('setup-start-time');
-    if(input) {
-      input.value = `${h}:${m}`;
-      Timer.calculateSchedule();
-    }
-  }
-
-  return {
-    showScreen, renderExamGrid, updateSelectedDisplay,
-    renderAlertsList, renderLiveAlerts, updateClockDisplay,
-    updateBreakDisplay, updateProgress, setWarnClass,
-    setPauseLabel, updateTimerExamName, syncBreakUI,
-    syncTimerDetails, initDefaultTime
-  };
-})();
-
-// ================================================================
-//  app.js — Event listeners
-// ================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  State.initAlerts();
-  State.setExam(CONFIG.exams[0]);
-  Notifications.requestPermission();
-  UI.renderExamGrid();
-  UI.updateSelectedDisplay();
-  UI.renderAlertsList('alerts-list');
-  UI.initDefaultTime();
-  UI.showScreen('setup');
-
-  document.getElementById('btn-use-custom').addEventListener('click', () => {
-    const h = parseInt(document.getElementById('custom-hours').value, 10)  || 0;
-    const m = parseInt(document.getElementById('custom-minutes').value, 10) || 0;
-    if (h === 0 && m === 0) return;
-    State.setCustomMinutes(h, m);
-    document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('active'));
-    UI.updateSelectedDisplay();
-    Timer.calculateSchedule();
-  });
-
-  ['custom-hours', 'custom-minutes'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-      if (!State.selectedExam) {
-        const h = parseInt(document.getElementById('custom-hours').value, 10)  || 0;
-        const m = parseInt(document.getElementById('custom-minutes').value, 10) || 0;
-        State.setCustomMinutes(h, m);
-        UI.updateSelectedDisplay();
-        Timer.calculateSchedule();
-      }
-    });
-  });
-
-  document.getElementById('setup-start-time').addEventListener('input', () => {
-    Timer.calculateSchedule();
-  });
-
-  document.getElementById('btn-add-alert').addEventListener('click', () => {
-    const input = document.getElementById('new-alert-minutes');
-    const mins = parseInt(input.value, 10);
-    if (!mins || mins < 1) return;
-    if (State.addAlert(mins)) {
-      UI.renderAlertsList('alerts-list');
-      UI.renderAlertsList('live-alerts-list');
-      input.value = '';
-    }
-  });
-
-  document.getElementById('new-alert-minutes').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('btn-add-alert').click();
-  });
-
-  document.getElementById('break-enabled').addEventListener('change', () => {
-    State.breakEnabled = document.getElementById('break-enabled').checked;
-    UI.syncBreakUI();
-  });
-
-  document.getElementById('break-minutes').addEventListener('change', () => {
-    State.breakMinutes = parseInt(document.getElementById('break-minutes').value, 10) || CONFIG.defaultBreakMinutes;
-  });
-
-  document.getElementById('test-mode-toggle').addEventListener('change', (e) => {
-    State.testMode = e.target.checked;
-  });
-
-  document.getElementById('btn-start').addEventListener('click', () => {
-    if (State.selectedMinutes <= 0) return;
-    State.breakMinutes = parseInt(document.getElementById('break-minutes').value, 10) || CONFIG.defaultBreakMinutes;
-    UI.updateTimerExamName();
-    Timer.start();
-  });
-
-  document.getElementById('btn-fullscreen-setup').addEventListener('click', toggleFullscreen);
-
-  document.getElementById('btn-pause').addEventListener('click', () => Timer.togglePause());
-
-  document.getElementById('btn-reset').addEventListener('click', () => {
-    if (confirm('¿Desea reiniciar la sesión desde el inicio?')) Timer.reset();
-  });
-
-  document.getElementById('btn-back').addEventListener('click', () => {
-    if (confirm('¿Está seguro de finalizar el cronómetro actual?')) {
-      Timer.stop();
-      UI.showScreen('setup');
-      UI.initDefaultTime();
-    }
-  });
-
-  document.getElementById('btn-fullscreen').addEventListener('click', toggleFullscreen);
-
-  document.getElementById('btn-live-add-alert').addEventListener('click', () => {
-    const input = document.getElementById('live-new-alert-minutes');
-    const mins = parseInt(input.value, 10);
-    if (!mins || mins < 1) return;
-    if (State.addAlert(mins)) {
-      UI.renderAlertsList('alerts-list');
-      UI.renderAlertsList('live-alerts-list');
-      input.value = '';
-    }
-  });
-
-  document.getElementById('live-new-alert-minutes').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('btn-live-add-alert').click();
-  });
-
-  document.getElementById('btn-skip-break').addEventListener('click', () => Timer.skipBreak());
-
-  document.getElementById('btn-new').addEventListener('click', () => {
-    State.resetFiredAlerts();
-    UI.showScreen('setup');
-    UI.renderAlertsList('alerts-list');
-    UI.initDefaultTime();
-  });
-
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      document.exitFullscreen().catch(() => {});
-    }
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && State.phase !== 'idle' && e.target.tagName !== 'INPUT') {
-      const active = document.querySelector('.screen.active');
-      if (active && active.id === 'screen-timer') {
-        e.preventDefault();
-        Timer.togglePause();
-      }
-    }
-    if (e.code === 'KeyF' && e.target.tagName !== 'INPUT') toggleFullscreen();
-  });
-});
-</script>
-</body>
+        <script>
+            // ================================================================
+            //  config.js — Configuración estática del cronómetro PAES
+            // ================================================================
+
+            const CONFIG = {
+                exams: [
+                    {
+                        id: "lectora",
+                        name: "Competencia Lectora",
+                        shortName: "Lectora",
+                        minutes: 150,
+                    },
+                    {
+                        id: "m1",
+                        name: "Matemática M1",
+                        shortName: "Mat. M1",
+                        minutes: 140,
+                    },
+                    {
+                        id: "m2",
+                        name: "Matemática M2",
+                        shortName: "Mat. M2",
+                        minutes: 140,
+                    },
+                    {
+                        id: "ciencias",
+                        name: "Ciencias",
+                        shortName: "Ciencias",
+                        minutes: 160,
+                    },
+                    {
+                        id: "historia",
+                        name: "Historia y Cs. Sociales",
+                        shortName: "Historia",
+                        minutes: 120,
+                    },
+                ],
+                defaultAlerts: [
+                    { minutes: 60, label: "1 hora restante", removable: false },
+                    {
+                        minutes: 30,
+                        label: "30 minutos restantes",
+                        removable: false,
+                    },
+                    {
+                        minutes: 15,
+                        label: "15 minutos restantes",
+                        removable: false,
+                    },
+                ],
+                defaultBreakMinutes: 10,
+                toastDuration: 6000,
+                warnThresholds: {
+                    warn60: 60,
+                    warn30: 30,
+                    warn15: 15,
+                    warn5: 5,
+                },
+            };
+
+            // ================================================================
+            //  state.js — Estado global de la aplicación
+            // ================================================================
+
+            const State = {
+                selectedExam: null,
+                selectedMinutes: 150,
+                alerts: [],
+                breakEnabled: false,
+                breakMinutes: 10,
+                phase: "idle",
+                totalSeconds: 0,
+                remainingSeconds: 0,
+                breakTotalSeconds: 0,
+                breakRemainingSeconds: 0,
+                testMode: false,
+                _intervalId: null,
+                _clockIntervalId: null,
+
+                setExam(exam) {
+                    this.selectedExam = exam;
+                    this.selectedMinutes = exam.minutes;
+                },
+
+                setCustomMinutes(h, m) {
+                    this.selectedExam = null;
+                    this.selectedMinutes = h * 60 + m;
+                },
+
+                initAlerts() {
+                    this.alerts = CONFIG.defaultAlerts.map((a) => ({
+                        ...a,
+                        fired: false,
+                        enabled: true,
+                    }));
+                },
+
+                addAlert(minutes) {
+                    const exists = this.alerts.find(
+                        (a) => a.minutes === minutes,
+                    );
+                    if (exists) return false;
+                    this.alerts.push({
+                        minutes,
+                        label: `${minutes} minuto${minutes !== 1 ? "s" : ""} restante${minutes !== 1 ? "s" : ""}`,
+                        removable: true,
+                        fired: false,
+                        enabled: true,
+                    });
+                    this.alerts.sort((a, b) => b.minutes - a.minutes);
+                    return true;
+                },
+
+                removeAlert(minutes) {
+                    this.alerts = this.alerts.filter(
+                        (a) => a.minutes !== minutes,
+                    );
+                },
+
+                toggleAlert(minutes, enabled) {
+                    const a = this.alerts.find((a) => a.minutes === minutes);
+                    if (a) a.enabled = enabled;
+                },
+
+                resetFiredAlerts() {
+                    this.alerts.forEach((a) => {
+                        a.fired = false;
+                    });
+                },
+            };
+
+            // ================================================================
+            //  sound.js — Sonidos mediante Web Audio API
+            // ================================================================
+
+            const Sound = (() => {
+                let ctx = null;
+                function getCtx() {
+                    if (!ctx)
+                        ctx = new (
+                            window.AudioContext || window.webkitAudioContext
+                        )();
+                    return ctx;
+                }
+                function beep(freq = 880, duration = 0.3, volume = 0.3) {
+                    try {
+                        const ac = getCtx();
+                        const osc = ac.createOscillator();
+                        const gain = ac.createGain();
+                        osc.connect(gain);
+                        gain.connect(ac.destination);
+                        osc.type = "sine";
+                        osc.frequency.setValueAtTime(freq, ac.currentTime);
+                        gain.gain.setValueAtTime(volume, ac.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(
+                            0.001,
+                            ac.currentTime + duration,
+                        );
+                        osc.start(ac.currentTime);
+                        osc.stop(ac.currentTime + duration);
+                    } catch (e) {
+                        console.warn("Sound:", e);
+                    }
+                }
+                return {
+                    alert() {
+                        beep(660, 0.25, 0.28);
+                        setTimeout(() => beep(660, 0.25, 0.28), 320);
+                    },
+                    urgentAlert() {
+                        beep(820, 0.18, 0.3);
+                        setTimeout(() => beep(820, 0.18, 0.3), 220);
+                        setTimeout(() => beep(820, 0.18, 0.3), 440);
+                    },
+                    done() {
+                        beep(523, 0.35, 0.3);
+                        setTimeout(() => beep(659, 0.35, 0.3), 380);
+                        setTimeout(() => beep(784, 0.5, 0.3), 760);
+                    },
+                    start() {
+                        beep(523, 0.2, 0.2);
+                        setTimeout(() => beep(659, 0.2, 0.2), 220);
+                    },
+                };
+            })();
+
+            // ================================================================
+            //  notifications.js — Toast UI + Notificaciones
+            // ================================================================
+
+            const Notifications = (() => {
+                async function requestPermission() {
+                    if (!("Notification" in window)) return;
+                    if (Notification.permission === "default") {
+                        await Notification.requestPermission();
+                    }
+                }
+                function sendBrowserNotification(title, body) {
+                    if (!("Notification" in window)) return;
+                    if (Notification.permission !== "granted") return;
+                    try {
+                        new Notification(title, {
+                            body,
+                            tag: "paes-timer",
+                            renotify: true,
+                        });
+                    } catch (e) {}
+                }
+                function showToast(message, type = "default") {
+                    const container =
+                        document.getElementById("toast-container");
+                    if (!container) return;
+                    const toast = document.createElement("div");
+                    toast.className = `toast toast-${type}`;
+                    const msg = document.createElement("span");
+                    msg.className = "toast-msg";
+                    msg.textContent = message;
+                    const close = document.createElement("button");
+                    close.className = "toast-close";
+                    close.innerHTML = "×";
+                    close.onclick = () => removeToast(toast);
+                    toast.appendChild(msg);
+                    toast.appendChild(close);
+                    container.appendChild(toast);
+                    setTimeout(() => removeToast(toast), CONFIG.toastDuration);
+                }
+                function removeToast(el) {
+                    if (!el.parentNode) return;
+                    el.style.opacity = "0";
+                    el.style.transform = "translateY(6px)";
+                    el.style.transition = "180ms ease";
+                    setTimeout(() => el.remove(), 200);
+                }
+                return {
+                    requestPermission,
+                    alertMinutes(minutes, label) {
+                        const isUrgent = minutes <= 15;
+                        showToast(label, isUrgent ? "danger" : "warn");
+                        sendBrowserNotification(
+                            `PAES — ${label}`,
+                            `Quedan ${label} para finalizar.`,
+                        );
+                    },
+                    start(examName) {
+                        showToast(`Iniciando: ${examName}`, "default");
+                    },
+                    done(examName) {
+                        showToast(`¡Tiempo agotado! ${examName}`, "done");
+                        sendBrowserNotification(
+                            "PAES — ¡Tiempo!",
+                            `La sesión de ${examName} ha concluido.`,
+                        );
+                    },
+                    breakStart(minutes) {
+                        showToast(`Descanso: ${minutes} minutos`, "default");
+                    },
+                    paused() {
+                        showToast("Cronómetro pausado", "default");
+                    },
+                };
+            })();
+
+            // ================================================================
+            //  timer.js — Motor del cronómetro
+            // ================================================================
+
+            const Timer = (() => {
+                function pad(n) {
+                    return String(n).padStart(2, "0");
+                }
+                function formatSeconds(sec) {
+                    const h = Math.floor(sec / 3600);
+                    const m = Math.floor((sec % 3600) / 60);
+                    const s = sec % 60;
+                    if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
+                    return `${pad(m)}:${pad(s)}`;
+                }
+                function formatMinutes(minutes) {
+                    const h = Math.floor(minutes / 60);
+                    const m = minutes % 60;
+                    if (h > 0 && m > 0) return `${h}h ${m}min`;
+                    if (h > 0) return `${h}h`;
+                    return `${m}min`;
+                }
+
+                function start() {
+                    State.resetFiredAlerts();
+                    if (State.breakEnabled && State.breakMinutes > 0) {
+                        _startBreak();
+                    } else {
+                        _startExam();
+                    }
+                    _startRealtimeClock();
+                }
+
+                function _startBreak() {
+                    State.phase = "break";
+                    State.breakTotalSeconds = State.breakMinutes * 60;
+                    State.breakRemainingSeconds = State.breakTotalSeconds;
+                    UI.showScreen("break");
+                    UI.updateBreakDisplay(
+                        formatSeconds(State.breakRemainingSeconds),
+                    );
+                    Notifications.breakStart(State.breakMinutes);
+                    _clearInterval();
+                    State._intervalId = setInterval(_tickBreak, 1000);
+                }
+
+                function _tickBreak() {
+                    const speed = State.testMode ? 60 : 1;
+                    State.breakRemainingSeconds -= speed;
+                    if (State.breakRemainingSeconds < 0)
+                        State.breakRemainingSeconds = 0;
+                    UI.updateBreakDisplay(
+                        formatSeconds(State.breakRemainingSeconds),
+                    );
+                    if (State.breakRemainingSeconds <= 0) {
+                        _clearInterval();
+                        _startExam();
+                    }
+                }
+
+                function skipBreak() {
+                    _clearInterval();
+                    _startExam();
+                }
+
+                function _startExam() {
+                    State.phase = "running";
+                    State.totalSeconds = State.selectedMinutes * 60;
+                    State.remainingSeconds = State.totalSeconds;
+
+                    UI.showScreen("timer");
+                    UI.updateClockDisplay(
+                        formatSeconds(State.remainingSeconds),
+                    );
+                    UI.updateProgress(1);
+                    UI.setWarnClass(State.remainingSeconds);
+                    UI.renderLiveAlerts();
+                    UI.syncTimerDetails();
+
+                    const examName = State.selectedExam
+                        ? State.selectedExam.name
+                        : "Personalizado";
+                    Notifications.start(examName);
+                    Sound.start();
+                    _clearInterval();
+                    State._intervalId = setInterval(_tickExam, 1000);
+                }
+
+                function _tickExam() {
+                    if (State.phase !== "running") return;
+
+                    const speed = State.testMode ? 60 : 1;
+                    State.remainingSeconds -= speed;
+                    if (State.remainingSeconds < 0) State.remainingSeconds = 0;
+
+                    const remaining = State.remainingSeconds;
+                    UI.updateClockDisplay(formatSeconds(remaining));
+                    UI.updateProgress(remaining / State.totalSeconds);
+                    UI.setWarnClass(remaining);
+                    _checkAlerts(remaining);
+
+                    if (remaining <= 0) {
+                        _clearInterval();
+                        State.phase = "done";
+                        const examName = State.selectedExam
+                            ? State.selectedExam.name
+                            : "Personalizado";
+                        Sound.done();
+                        Notifications.done(examName);
+                        setTimeout(() => UI.showScreen("done"), 800);
+                    }
+                }
+
+                function _checkAlerts(remainingSeconds) {
+                    State.alerts.forEach((alert) => {
+                        if (!alert.enabled || alert.fired) return;
+                        const threshold = alert.minutes * 60;
+                        if (
+                            remainingSeconds <= threshold &&
+                            remainingSeconds >
+                                threshold - (State.testMode ? 65 : 2)
+                        ) {
+                            alert.fired = true;
+                            alert.minutes <= 15
+                                ? Sound.urgentAlert()
+                                : Sound.alert();
+                            Notifications.alertMinutes(
+                                alert.minutes,
+                                alert.label,
+                            );
+                        }
+                    });
+                }
+
+                function togglePause() {
+                    const cc = document.getElementById("clock-container");
+                    if (State.phase === "running") {
+                        State.phase = "paused";
+                        _clearInterval();
+                        UI.setPauseLabel("Reanudar");
+                        Notifications.paused();
+                        if (cc) cc.classList.add("paused");
+                    } else if (State.phase === "paused") {
+                        State.phase = "running";
+                        State._intervalId = setInterval(_tickExam, 1000);
+                        UI.setPauseLabel("Pausar");
+                        if (cc) cc.classList.remove("paused");
+                    }
+                }
+
+                function reset() {
+                    _clearInterval();
+                    State.phase = "running";
+                    State.remainingSeconds = State.totalSeconds;
+                    State.resetFiredAlerts();
+                    UI.setPauseLabel("Pausar");
+                    const cc = document.getElementById("clock-container");
+                    if (cc) cc.classList.remove("paused");
+                    UI.updateClockDisplay(
+                        formatSeconds(State.remainingSeconds),
+                    );
+                    UI.updateProgress(1);
+                    UI.setWarnClass(State.remainingSeconds);
+                    State._intervalId = setInterval(_tickExam, 1000);
+                }
+
+                function _clearInterval() {
+                    if (State._intervalId) {
+                        clearInterval(State._intervalId);
+                        State._intervalId = null;
+                    }
+                }
+
+                function _startRealtimeClock() {
+                    if (State._clockIntervalId)
+                        clearInterval(State._clockIntervalId);
+                    State._clockIntervalId = setInterval(() => {
+                        const now = new Date();
+                        document.getElementById("live-clock").textContent =
+                            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                    }, 1000);
+                }
+
+                function stop() {
+                    _clearInterval();
+                    if (State._clockIntervalId)
+                        clearInterval(State._clockIntervalId);
+                    State.phase = "idle";
+                }
+
+                function calculateSchedule() {
+                    const startInput =
+                        document.getElementById("setup-start-time").value;
+                    if (!startInput) return;
+
+                    const [h, m] = startInput.split(":").map(Number);
+                    const duration = State.selectedMinutes;
+
+                    const endDate = new Date();
+                    endDate.setHours(h, m, 0, 0);
+                    endDate.setMinutes(endDate.getMinutes() + duration);
+
+                    const endStr = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+                    document.getElementById("setup-end-time").textContent =
+                        endStr;
+
+                    return { start: startInput, end: endStr };
+                }
+
+                return {
+                    start,
+                    skipBreak,
+                    togglePause,
+                    reset,
+                    stop,
+                    formatMinutes,
+                    calculateSchedule,
+                };
+            })();
+
+            // ================================================================
+            //  ui.js — Manipulación del DOM
+            // ================================================================
+
+            const UI = (() => {
+                const screens = {
+                    setup: document.getElementById("screen-setup"),
+                    timer: document.getElementById("screen-timer"),
+                    break: document.getElementById("screen-break"),
+                    done: document.getElementById("screen-done"),
+                };
+
+                function showScreen(name) {
+                    Object.values(screens).forEach((s) =>
+                        s.classList.remove("active"),
+                    );
+                    if (screens[name]) screens[name].classList.add("active");
+                }
+
+                function renderExamGrid() {
+                    const grid = document.getElementById("exam-grid");
+                    grid.innerHTML = "";
+                    CONFIG.exams.forEach((exam) => {
+                        const btn = document.createElement("button");
+                        btn.className = "exam-btn";
+                        btn.dataset.examId = exam.id;
+                        btn.innerHTML = `<span class="exam-btn-name">${exam.name}</span><span class="exam-btn-duration">${Timer.formatMinutes(exam.minutes)}</span>`;
+                        btn.addEventListener("click", () => {
+                            State.setExam(exam);
+                            _syncCustomInputs(exam.minutes);
+                            renderExamGrid();
+                            updateSelectedDisplay();
+                            Timer.calculateSchedule();
+                        });
+                        if (
+                            State.selectedExam &&
+                            State.selectedExam.id === exam.id
+                        ) {
+                            btn.classList.add("active");
+                        }
+                        grid.appendChild(btn);
+                    });
+                }
+
+                function _syncCustomInputs(minutes) {
+                    document.getElementById("custom-hours").value = Math.floor(
+                        minutes / 60,
+                    );
+                    document.getElementById("custom-minutes").value =
+                        minutes % 60;
+                }
+
+                function updateSelectedDisplay() {
+                    document.getElementById("selected-value").textContent =
+                        Timer.formatMinutes(State.selectedMinutes);
+                    document.getElementById("selected-source").textContent =
+                        State.selectedExam
+                            ? State.selectedExam.name
+                            : "Personalizado";
+                }
+
+                function renderAlertsList(containerId) {
+                    const container = document.getElementById(containerId);
+                    if (!container) return;
+                    container.innerHTML = "";
+                    State.alerts.forEach((alert) => {
+                        const row = document.createElement("div");
+                        row.className = "alert-row";
+                        const cb = document.createElement("input");
+                        cb.type = "checkbox";
+                        cb.checked = alert.enabled;
+                        cb.addEventListener("change", () => {
+                            State.toggleAlert(alert.minutes, cb.checked);
+                            renderAlertsList("alerts-list");
+                            renderAlertsList("live-alerts-list");
+                        });
+                        const label = document.createElement("span");
+                        label.className = "alert-row-label";
+                        label.textContent = alert.label;
+                        const badge = document.createElement("span");
+                        badge.className = `alert-row-badge ${alert.removable ? "" : "badge-default"}`;
+                        badge.textContent = `${alert.minutes} min`;
+                        row.appendChild(cb);
+                        row.appendChild(label);
+                        row.appendChild(badge);
+                        if (alert.removable) {
+                            const rm = document.createElement("button");
+                            rm.className = "btn-remove-alert";
+                            rm.title = "Eliminar aviso";
+                            rm.innerHTML = "×";
+                            rm.addEventListener("click", () => {
+                                State.removeAlert(alert.minutes);
+                                renderAlertsList("alerts-list");
+                                renderAlertsList("live-alerts-list");
+                            });
+                            row.appendChild(rm);
+                        }
+                        container.appendChild(row);
+                    });
+                }
+
+                function renderLiveAlerts() {
+                    renderAlertsList("live-alerts-list");
+                    renderAlertTicks();
+                }
+
+                function renderAlertTicks() {
+                    const container = document.getElementById("t-alert-ticks");
+                    if (!container) return;
+                    container.innerHTML = "";
+                    const total = State.totalSeconds;
+                    if (!total) return;
+
+                    State.alerts.forEach((alert) => {
+                        const alertSec = alert.minutes * 60;
+                        if (!alert.enabled || alertSec >= total) return;
+
+                        // Posición desde la izquierda = % transcurrido cuando dispara el aviso
+                        const pct = ((total - alertSec) / total) * 100;
+
+                        const tick = document.createElement("div");
+                        tick.className =
+                            "t-tick" + (alert.fired ? " tick-fired" : "");
+                        tick.style.left = `${pct}%`;
+
+                        const label = document.createElement("div");
+                        label.className = "t-tick-label";
+                        label.textContent = `${alert.minutes}'`;
+                        tick.appendChild(label);
+
+                        container.appendChild(tick);
+                    });
+                }
+
+                function updateClockDisplay(text) {
+                    // Actualizar elemento oculto para compatibilidad
+                    const hidden = document.getElementById("clock-display");
+                    if (hidden) hidden.textContent = text;
+
+                    // Parsear "hh:mm:ss" o "mm:ss"
+                    const parts = text.split(":").map(Number);
+                    let h = 0,
+                        m = 0,
+                        s = 0;
+                    if (parts.length === 3) {
+                        h = parts[0];
+                        m = parts[1];
+                        s = parts[2];
+                    } else {
+                        m = parts[0];
+                        s = parts[1];
+                    }
+
+                    const pad2 = (n) => String(n).padStart(2, "0");
+
+                    const hEl = document.getElementById("cnt-h");
+                    const mEl = document.getElementById("cnt-m");
+                    const sEl = document.getElementById("cnt-s");
+                    const hUnit = document.getElementById("cnt-h-unit");
+                    const mUnit = document.getElementById("cnt-m-unit");
+                    const hGroup = document.getElementById("cnt-h-group");
+
+                    if (hEl) hEl.textContent = h;
+                    if (mEl) mEl.textContent = h > 0 ? pad2(m) : m;
+                    if (sEl) sEl.textContent = pad2(s);
+                    if (hUnit) hUnit.textContent = h === 1 ? "hora" : "HORAS";
+                    if (mUnit)
+                        mUnit.textContent =
+                            m === 1 && h === 0 ? "minuto" : "MINUTOS";
+                    if (hGroup) hGroup.style.display = h > 0 ? "" : "none";
+                }
+                function updateBreakDisplay(text) {
+                    document.getElementById("break-display").textContent = text;
+                }
+
+                function updateProgress(ratio) {
+                    // ratio = remainingSeconds / totalSeconds
+                    // La barra muestra tiempo TRANSCURRIDO (crece de izquierda a derecha)
+                    const elapsed = 1 - ratio;
+                    const pct = Math.max(0, Math.min(100, elapsed * 100));
+
+                    const bar = document.getElementById("clock-progress-bar");
+                    if (bar) bar.style.width = `${pct}%`;
+
+                    const pctEl = document.getElementById("t-progress-pct");
+                    if (pctEl) pctEl.textContent = `${Math.round(pct)}%`;
+
+                    const total = State.totalSeconds || 0;
+                    const remainSec = Math.round(ratio * total);
+                    const elapsedSec = total - remainSec;
+
+                    const pad = (n) => String(Math.max(0, n)).padStart(2, "0");
+                    const fmt = (s) => {
+                        const h = Math.floor(s / 3600);
+                        const m = Math.floor((s % 3600) / 60);
+                        const sec = s % 60;
+                        return h > 0
+                            ? `${pad(h)}:${pad(m)}:${pad(sec)}`
+                            : `${pad(m)}:${pad(sec)}`;
+                    };
+
+                    const elapsedEl = document.getElementById("t-elapsed-val");
+                    if (elapsedEl) elapsedEl.textContent = fmt(elapsedSec);
+
+                    const remainEl = document.getElementById("t-remain-val");
+                    if (remainEl) remainEl.textContent = fmt(remainSec);
+                }
+
+                function setWarnClass(remainingSeconds) {
+                    const container =
+                        document.getElementById("clock-container");
+                    if (!container) return;
+                    const mins = remainingSeconds / 60;
+                    container.classList.remove(
+                        "warn-60",
+                        "warn-30",
+                        "warn-15",
+                        "warn-5",
+                    );
+                    const { warn60, warn30, warn15, warn5 } =
+                        CONFIG.warnThresholds;
+                    if (mins <= warn5) container.classList.add("warn-5");
+                    else if (mins <= warn15) container.classList.add("warn-15");
+                    else if (mins <= warn30) container.classList.add("warn-30");
+                    else if (mins <= warn60) container.classList.add("warn-60");
+                }
+
+                function setPauseLabel(text) {
+                    const btn = document.getElementById("btn-pause");
+                    if (!btn) return;
+                    if (text === "Reanudar") {
+                        btn.innerHTML = "&#9654; Reanudar";
+                    } else {
+                        btn.innerHTML = "&#9646;&#9646; Pausar";
+                    }
+                }
+
+                function updateTimerExamName() {
+                    const name = State.selectedExam
+                        ? State.selectedExam.name
+                        : "Personalizado";
+                    const el = document.getElementById("timer-exam-name");
+                    if (el) el.textContent = name;
+                    const done = document.getElementById("done-exam-name");
+                    if (done) done.textContent = name;
+                }
+
+                function syncBreakUI() {
+                    const enabled =
+                        document.getElementById("break-enabled").checked;
+                    document
+                        .getElementById("break-config")
+                        .classList.toggle("enabled", enabled);
+                }
+
+                function syncTimerDetails() {
+                    const name = State.selectedExam
+                        ? State.selectedExam.name
+                        : "Personalizado";
+
+                    const nameEl = document.getElementById("timer-info-name");
+                    if (nameEl) nameEl.textContent = name;
+
+                    const durEl = document.getElementById(
+                        "timer-info-duration",
+                    );
+                    if (durEl)
+                        durEl.textContent = Timer.formatMinutes(
+                            State.selectedMinutes,
+                        );
+
+                    const schedule = Timer.calculateSchedule();
+                    if (schedule) {
+                        const startEl =
+                            document.getElementById("live-start-time");
+                        if (startEl) startEl.textContent = schedule.start;
+                        const endEl = document.getElementById("live-end-time");
+                        if (endEl) endEl.textContent = schedule.end;
+                        const progStart =
+                            document.getElementById("t-prog-start");
+                        if (progStart) progStart.textContent = schedule.start;
+                        const progEnd = document.getElementById("t-prog-end");
+                        if (progEnd) progEnd.textContent = schedule.end;
+                    }
+                }
+
+                function initDefaultTime() {
+                    const now = new Date();
+                    const h = String(now.getHours()).padStart(2, "0");
+                    const m = String(now.getMinutes()).padStart(2, "0");
+                    const input = document.getElementById("setup-start-time");
+                    if (input) {
+                        input.value = `${h}:${m}`;
+                        Timer.calculateSchedule();
+                    }
+                }
+
+                return {
+                    showScreen,
+                    renderExamGrid,
+                    updateSelectedDisplay,
+                    renderAlertsList,
+                    renderLiveAlerts,
+                    renderAlertTicks,
+                    updateClockDisplay,
+                    updateBreakDisplay,
+                    updateProgress,
+                    setWarnClass,
+                    setPauseLabel,
+                    updateTimerExamName,
+                    syncBreakUI,
+                    syncTimerDetails,
+                    initDefaultTime,
+                };
+            })();
+
+            // ================================================================
+            //  app.js — Event listeners
+            // ================================================================
+
+            document.addEventListener("DOMContentLoaded", () => {
+                State.initAlerts();
+                State.setExam(CONFIG.exams[0]);
+                Notifications.requestPermission();
+                UI.renderExamGrid();
+                UI.updateSelectedDisplay();
+                UI.renderAlertsList("alerts-list");
+                UI.initDefaultTime();
+                UI.showScreen("setup");
+
+                document
+                    .getElementById("btn-use-custom")
+                    .addEventListener("click", () => {
+                        const h =
+                            parseInt(
+                                document.getElementById("custom-hours").value,
+                                10,
+                            ) || 0;
+                        const m =
+                            parseInt(
+                                document.getElementById("custom-minutes").value,
+                                10,
+                            ) || 0;
+                        if (h === 0 && m === 0) return;
+                        State.setCustomMinutes(h, m);
+                        document
+                            .querySelectorAll(".exam-btn")
+                            .forEach((b) => b.classList.remove("active"));
+                        UI.updateSelectedDisplay();
+                        Timer.calculateSchedule();
+                    });
+
+                ["custom-hours", "custom-minutes"].forEach((id) => {
+                    document
+                        .getElementById(id)
+                        .addEventListener("change", () => {
+                            if (!State.selectedExam) {
+                                const h =
+                                    parseInt(
+                                        document.getElementById("custom-hours")
+                                            .value,
+                                        10,
+                                    ) || 0;
+                                const m =
+                                    parseInt(
+                                        document.getElementById(
+                                            "custom-minutes",
+                                        ).value,
+                                        10,
+                                    ) || 0;
+                                State.setCustomMinutes(h, m);
+                                UI.updateSelectedDisplay();
+                                Timer.calculateSchedule();
+                            }
+                        });
+                });
+
+                document
+                    .getElementById("setup-start-time")
+                    .addEventListener("input", () => {
+                        Timer.calculateSchedule();
+                    });
+
+                document
+                    .getElementById("btn-add-alert")
+                    .addEventListener("click", () => {
+                        const input =
+                            document.getElementById("new-alert-minutes");
+                        const mins = parseInt(input.value, 10);
+                        if (!mins || mins < 1) return;
+                        if (State.addAlert(mins)) {
+                            UI.renderAlertsList("alerts-list");
+                            UI.renderAlertsList("live-alerts-list");
+                            input.value = "";
+                        }
+                    });
+
+                document
+                    .getElementById("new-alert-minutes")
+                    .addEventListener("keydown", (e) => {
+                        if (e.key === "Enter")
+                            document.getElementById("btn-add-alert").click();
+                    });
+
+                document
+                    .getElementById("break-enabled")
+                    .addEventListener("change", () => {
+                        State.breakEnabled =
+                            document.getElementById("break-enabled").checked;
+                        UI.syncBreakUI();
+                    });
+
+                document
+                    .getElementById("break-minutes")
+                    .addEventListener("change", () => {
+                        State.breakMinutes =
+                            parseInt(
+                                document.getElementById("break-minutes").value,
+                                10,
+                            ) || CONFIG.defaultBreakMinutes;
+                    });
+
+                document
+                    .getElementById("test-mode-toggle")
+                    .addEventListener("change", (e) => {
+                        State.testMode = e.target.checked;
+                    });
+
+                document
+                    .getElementById("btn-start")
+                    .addEventListener("click", () => {
+                        if (State.selectedMinutes <= 0) return;
+                        State.breakMinutes =
+                            parseInt(
+                                document.getElementById("break-minutes").value,
+                                10,
+                            ) || CONFIG.defaultBreakMinutes;
+                        UI.updateTimerExamName();
+                        Timer.start();
+                    });
+
+                document
+                    .getElementById("btn-fullscreen-setup")
+                    .addEventListener("click", toggleFullscreen);
+
+                document
+                    .getElementById("btn-pause")
+                    .addEventListener("click", () => Timer.togglePause());
+
+                document
+                    .getElementById("btn-reset")
+                    .addEventListener("click", () => {
+                        if (
+                            confirm(
+                                "¿Desea reiniciar la sesión desde el inicio?",
+                            )
+                        )
+                            Timer.reset();
+                    });
+
+                document
+                    .getElementById("btn-back")
+                    .addEventListener("click", () => {
+                        if (
+                            confirm(
+                                "¿Está seguro de finalizar el cronómetro actual?",
+                            )
+                        ) {
+                            Timer.stop();
+                            UI.showScreen("setup");
+                            UI.initDefaultTime();
+                        }
+                    });
+
+                document
+                    .getElementById("btn-fullscreen")
+                    .addEventListener("click", toggleFullscreen);
+
+                document
+                    .getElementById("btn-live-add-alert")
+                    .addEventListener("click", () => {
+                        const input = document.getElementById(
+                            "live-new-alert-minutes",
+                        );
+                        const mins = parseInt(input.value, 10);
+                        if (!mins || mins < 1) return;
+                        if (State.addAlert(mins)) {
+                            UI.renderAlertsList("alerts-list");
+                            UI.renderAlertsList("live-alerts-list");
+                            input.value = "";
+                        }
+                    });
+
+                document
+                    .getElementById("live-new-alert-minutes")
+                    .addEventListener("keydown", (e) => {
+                        if (e.key === "Enter")
+                            document
+                                .getElementById("btn-live-add-alert")
+                                .click();
+                    });
+
+                document
+                    .getElementById("btn-skip-break")
+                    .addEventListener("click", () => Timer.skipBreak());
+
+                document
+                    .getElementById("btn-new")
+                    .addEventListener("click", () => {
+                        State.resetFiredAlerts();
+                        UI.showScreen("setup");
+                        UI.renderAlertsList("alerts-list");
+                        UI.initDefaultTime();
+                    });
+
+                function toggleFullscreen() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement
+                            .requestFullscreen()
+                            .catch(() => {});
+                    } else {
+                        document.exitFullscreen().catch(() => {});
+                    }
+                }
+
+                document.addEventListener("keydown", (e) => {
+                    if (
+                        e.code === "Space" &&
+                        State.phase !== "idle" &&
+                        e.target.tagName !== "INPUT"
+                    ) {
+                        const active = document.querySelector(".screen.active");
+                        if (active && active.id === "screen-timer") {
+                            e.preventDefault();
+                            Timer.togglePause();
+                        }
+                    }
+                    if (e.code === "KeyF" && e.target.tagName !== "INPUT")
+                        toggleFullscreen();
+                });
+            });
+        </script>
+    </body>
 </html>
